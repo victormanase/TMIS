@@ -16,21 +16,42 @@ A full-stack web application for managing rental properties, units, tenants, pay
 | **Auth** | JWT (access + refresh tokens) · bcryptjs |
 | **Charts** | Recharts |
 | **Exports** | pdfkit (PDF) · exceljs (Excel) |
-| **Deployment** | Docker Compose · Nginx |
+| **Deployment** | Docker Compose · Nginx (HTTP) |
 
 ---
 
 ## Features
 
-- **User management** with 4 roles: Admin, Manager, Accountant, Viewer
-- **Property & unit management** (Apartment, Studio, AirBnB, Other)
-- **Tenant management** with full assignment history
-- **Payment tracking** — Rent and Service Charge collections
-- **AirBnB bookings** — daily rate, auto-calculated totals, discount support
-- **Rental & AirBnB reports** with PDF and Excel export
-- **Upcoming rent collection alerts** — tenants due within 45 days
-- **Audit trail** — every create/update/delete action is logged with the acting user
-- **Dashboard** with KPI cards, monthly income bar chart, and occupancy donut
+| Module | What it does |
+|---|---|
+| **User Management** | 4 roles (Admin / Manager / Accountant / Viewer), activate/deactivate, full permissions matrix |
+| **Properties** | Register and manage rental properties with location and description |
+| **Rental Units** | Apartment, Studio, AirBnB, Other — per-unit rent, service charge, daily rate |
+| **Tenants** | Register tenants, assign to units, track full assignment history |
+| **Payments** | Record Rent and Service Charge collections with period tracking |
+| **AirBnB Bookings** | Daily rate, auto-calculated nights & total, discount support |
+| **Rental Reports** | Filter by property/date, export as PDF or Excel |
+| **AirBnB Reports** | Booking summary, revenue, nights — export as PDF or Excel |
+| **Upcoming Collections** | Tenants with rent due in the next 45 days (Overdue / Due Soon / Upcoming) |
+| **Dashboard** | KPI cards, monthly income bar chart, occupancy donut, collection alerts |
+| **Audit Logs** | Every create / update / delete action logged with acting user |
+
+---
+
+## Role Permissions
+
+| Feature | Admin | Manager | Accountant | Viewer |
+|---|:---:|:---:|:---:|:---:|
+| Dashboard & KPIs | ✅ | ✅ | ✅ | ✅ |
+| Upcoming collections alert | ✅ | ✅ | ✅ | ❌ |
+| View properties & units | ✅ | ✅ | ✅ | ❌ |
+| Create / edit properties & units | ✅ | ✅ | ❌ | ❌ |
+| Manage tenants & assignments | ✅ | ✅ | ❌ | ❌ |
+| Record & view payments | ✅ | ✅ | ✅ | ❌ |
+| Manage AirBnB bookings | ✅ | ✅ | ❌ | ❌ |
+| Reports & export (PDF/Excel) | ✅ | ✅ | ✅ | ❌ |
+| User management | ✅ | ❌ | ❌ | ❌ |
+| Audit logs | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -41,289 +62,189 @@ A full-stack web application for managing rental properties, units, tenants, pay
 | Email | `admin@tmis.local` |
 | Password | `Admin@1234` |
 
-> Change this password immediately after first login.
+> ⚠️ Change the default password immediately after first login.
 
 ---
 
-## Local Development (without Docker)
+## Project Structure
 
-### Prerequisites
-- Node.js ≥ 20
-- PostgreSQL 16 (or run `brew install postgresql@16` on macOS)
-
-### 1 — Clone the repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/tmis.git
-cd tmis
 ```
-
-### 2 — Backend setup
-
-```bash
-cd backend
-
-# Install dependencies
-npm install
-
-# Create environment file
-cp .env.example .env
-# Edit .env — fill in DATABASE_URL, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
-
-# Run database migrations
-npx prisma migrate dev
-
-# Seed the default admin user
-npm run db:seed
-
-# Start the development server (hot-reload)
-npm run dev
-```
-
-Backend runs at **http://localhost:4000**
-
-### 3 — Frontend setup
-
-```bash
-# In a new terminal
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start the dev server
-npm run dev
-```
-
-Frontend runs at **http://localhost:5173**
-
-> The Vite dev server proxies all `/api/*` requests to the backend automatically — no CORS setup needed.
-
----
-
-## VPS Deployment Guide (Ubuntu 22.04 / 24.04)
-
-### Prerequisites on the VPS
-
-```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install Docker
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER
-newgrp docker
-
-# Install Docker Compose plugin
-sudo apt install docker-compose-plugin -y
-
-# Verify
-docker --version
-docker compose version
+tmis/
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma        # All database models & enums
+│   │   ├── migrations/          # Migration history (auto-applied on deploy)
+│   │   └── seed.ts              # Seeds the default admin user
+│   ├── src/
+│   │   ├── controllers/         # Thin request handlers
+│   │   ├── middleware/          # auth · rbac · auditLog · errorHandler
+│   │   ├── routes/              # Express route definitions
+│   │   ├── services/            # All business logic
+│   │   └── utils/               # JWT · password · PDF · Excel · response
+│   ├── Dockerfile               # Multi-stage build (builder → runner)
+│   ├── entrypoint.sh            # Runs migrations then starts server
+│   └── .env.example
+├── frontend/
+│   ├── src/
+│   │   ├── api/                 # Axios API modules (one per resource)
+│   │   ├── components/
+│   │   │   ├── layout/          # Sidebar · Layout · ProtectedRoute
+│   │   │   └── ui/              # Button · Input · Card · Modal · Table …
+│   │   ├── hooks/               # useAuth
+│   │   ├── pages/               # One folder per route
+│   │   └── store/               # Zustand auth store (persisted)
+│   ├── Dockerfile               # Build SPA → serve with Nginx
+│   └── nginx.conf               # Proxies /api/* to backend, serves SPA
+├── docker-compose.yml           # Orchestrates db · backend · frontend
+├── deploy.sh                    # One-shot VPS deployment script
+├── .env.example                 # Environment variable template
+└── README.md
 ```
 
 ---
 
-### 1 — Clone the repository
+## VPS Deployment — One Command
+
+> Tested on **Ubuntu 22.04 / 24.04**. No SSL certificate required — runs on plain HTTP (port 80).
+
+### Step 1 — SSH into your VPS and clone the repository
 
 ```bash
-# SSH into your VPS
 ssh user@YOUR_VPS_IP
 
-# Clone the repo
 git clone https://github.com/YOUR_USERNAME/tmis.git
 cd tmis
 ```
 
----
-
-### 2 — Configure environment variables
+### Step 2 — Run the deployment script
 
 ```bash
-cp .env.example .env
-nano .env
+sudo bash deploy.sh
 ```
 
-Fill in the values:
+That's it. The script does everything:
 
-```env
-JWT_ACCESS_SECRET=<generate a long random string — see below>
-JWT_REFRESH_SECRET=<generate a different long random string>
-FRONTEND_URL=https://yourdomain.com
+| # | What it does |
+|---|---|
+| 1 | Checks the operating system |
+| 2 | Installs Docker and Docker Compose if not present |
+| 3 | Detects your server's public IP (or lets you enter a domain) |
+| 4 | Generates a `.env` file with cryptographically secure random secrets |
+| 5 | Pulls the latest code from Git (if applicable) |
+| 6 | Builds all Docker images |
+| 7 | Starts all containers (`db`, `backend`, `frontend`) |
+| 8 | Waits for the backend health check to pass |
+| 9 | Seeds the default admin user (first deployment only) |
+| 10 | Prints the access URL and login credentials |
+
+When it finishes you will see:
+
+```
+╔══════════════════════════════════════════════════════╗
+║            TMIS is now running! 🎉                  ║
+╚══════════════════════════════════════════════════════╝
+
+  Application URL:   http://YOUR_VPS_IP
+  API Health:        http://YOUR_VPS_IP/api/health
+
+  Default Login:
+    Email    →  admin@tmis.local
+    Password →  Admin@1234
 ```
 
-Generate secure secrets:
-
-```bash
-# Run twice — use each output for one secret
-node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-```
-
-Also update the backend `.env.example`:
-
-```bash
-cp backend/.env.example backend/.env
-# The DATABASE_URL is managed by Docker internally — no change needed for Docker deployment
-```
-
----
-
-### 3 — Build and start all services
-
-```bash
-docker compose up -d --build
-```
-
-This starts three containers:
-| Container | Description | Port |
-|---|---|---|
-| `db` | PostgreSQL 16 | internal |
-| `backend` | Express API (runs migrations on startup) | `4000` |
-| `frontend` | Nginx serving the built React app | `80` |
-
-Check that all containers are running:
-
-```bash
-docker compose ps
-```
-
-Check backend logs:
-
-```bash
-docker compose logs backend -f
-```
-
----
-
-### 4 — Seed the database (first deployment only)
-
-```bash
-docker compose exec backend node -e "
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
-const prisma = new PrismaClient();
-bcrypt.hash('Admin@1234', 12).then(hash =>
-  prisma.user.upsert({
-    where: { email: 'admin@tmis.local' },
-    update: {},
-    create: { firstName: 'System', lastName: 'Admin', email: 'admin@tmis.local',
-              phone: '+255700000000', password: hash, role: 'ADMIN', isActive: true }
-  })
-).then(() => { console.log('Seeded'); prisma.\$disconnect(); });
-"
-```
-
----
-
-### 5 — Set up Nginx reverse proxy with SSL (recommended)
-
-Install Nginx and Certbot on the host:
-
-```bash
-sudo apt install nginx certbot python3-certbot-nginx -y
-```
-
-Create a site config:
-
-```bash
-sudo nano /etc/nginx/sites-available/tmis
-```
-
-```nginx
-server {
-    listen 80;
-    server_name yourdomain.com www.yourdomain.com;
-
-    location / {
-        proxy_pass http://localhost:80;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-```
-
-Enable and obtain SSL:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/tmis /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-
-# Get SSL certificate (replace with your domain)
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
-```
-
-Certbot automatically updates the Nginx config to redirect HTTP → HTTPS and renews the certificate.
-
----
-
-### 6 — Open firewall ports
+### Step 3 — Open firewall ports
 
 ```bash
 sudo ufw allow OpenSSH
 sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
 sudo ufw enable
 sudo ufw status
 ```
 
----
-
-### 7 — Verify deployment
+### Step 4 — Verify
 
 ```bash
-# Health check
-curl https://yourdomain.com/api/health
-
-# Expected response
+curl http://YOUR_VPS_IP/api/health
 # {"status":"ok","timestamp":"..."}
 ```
 
-Open `https://yourdomain.com` in a browser and log in with the default admin credentials.
+Open `http://YOUR_VPS_IP` in a browser and log in.
 
 ---
 
 ## Updating the Application
 
 ```bash
-# Pull latest code
-git pull origin main
+cd tmis
+sudo bash deploy.sh
+```
 
-# Rebuild and restart
-docker compose up -d --build
+The script detects an existing `.env` (keeps your secrets), pulls latest code, rebuilds images, and restarts containers. Migrations run automatically on every startup.
 
-# Migrations run automatically on backend startup
+---
+
+## Environment Variables
+
+All variables live in `.env` at the project root. The `deploy.sh` script creates this file automatically. If you need to set values manually:
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+| Variable | Description | Auto-generated? |
+|---|---|:---:|
+| `SERVER_IP` | Public IP or domain (no `http://`, no trailing `/`) | ✅ |
+| `DB_PASSWORD` | PostgreSQL password | ✅ |
+| `JWT_ACCESS_SECRET` | Secret for signing 15-minute access tokens | ✅ |
+| `JWT_REFRESH_SECRET` | Secret for signing 7-day refresh tokens | ✅ |
+
+To generate secrets manually:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
 ---
 
-## Useful Docker Commands
+## Docker Services
+
+| Service | Image | Exposed | Role |
+|---|---|---|---|
+| `db` | `postgres:16-alpine` | Internal only | PostgreSQL database |
+| `backend` | Built from `./backend` | Internal only | Express REST API |
+| `frontend` | Built from `./frontend` | `0.0.0.0:80` | Nginx — serves React SPA + proxies `/api/*` to backend |
+
+> The backend is **not exposed on a public port**. All traffic goes through the Nginx frontend container, which proxies `/api/*` internally to the backend.
+
+---
+
+## Useful Commands
 
 ```bash
-# View running containers
+# View status of all containers
 docker compose ps
 
-# View backend logs (live)
-docker compose logs backend -f
-
-# View all logs
+# Follow live logs (all services)
 docker compose logs -f
+
+# Follow backend logs only
+docker compose logs backend -f
 
 # Restart a single service
 docker compose restart backend
 
-# Stop everything
-docker compose down
-
-# Stop and delete the database volume (⚠️ destroys all data)
-docker compose down -v
-
 # Open a shell inside the backend container
 docker compose exec backend sh
 
-# Open psql inside the database container
+# Open psql in the database container
 docker compose exec db psql -U tmis_user -d tmis_db
+
+# Stop all containers (data is preserved)
+docker compose down
+
+# Stop and destroy ALL data (⚠️ irreversible)
+docker compose down -v
 ```
 
 ---
@@ -333,22 +254,24 @@ docker compose exec db psql -U tmis_user -d tmis_db
 ### Backup
 
 ```bash
-docker compose exec db pg_dump -U tmis_user tmis_db > backup_$(date +%Y%m%d_%H%M%S).sql
+docker compose exec -T db pg_dump -U tmis_user tmis_db \
+  > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ### Restore
 
 ```bash
-cat backup_YYYYMMDD_HHMMSS.sql | docker compose exec -T db psql -U tmis_user -d tmis_db
+cat backup_YYYYMMDD_HHMMSS.sql \
+  | docker compose exec -T db psql -U tmis_user -d tmis_db
 ```
 
-### Automate daily backups with cron
+### Automated daily backup (cron)
 
 ```bash
 crontab -e
 ```
 
-Add this line (backs up at 2 AM daily, keeps 30 days):
+Add (runs at 2 AM, keeps 30 days of backups):
 
 ```cron
 0 2 * * * cd /home/user/tmis && docker compose exec -T db pg_dump -U tmis_user tmis_db > /home/user/backups/tmis_$(date +\%Y\%m\%d).sql && find /home/user/backups -name "tmis_*.sql" -mtime +30 -delete
@@ -356,68 +279,96 @@ Add this line (backs up at 2 AM daily, keeps 30 days):
 
 ---
 
-## Project Structure
+## Local Development (without Docker)
 
+### Prerequisites
+- Node.js ≥ 20
+- PostgreSQL 16
+
+On macOS: `brew install postgresql@16 && brew services start postgresql@16`
+
+### Backend
+
+```bash
+cd backend
+
+# Install dependencies
+npm install
+
+# Create and fill in your local environment file
+cp .env.example .env
+# Set DATABASE_URL, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET in .env
+
+# Create the database
+psql postgres -c "CREATE USER tmis_user WITH PASSWORD 'tmis_password' CREATEDB;"
+psql postgres -c "CREATE DATABASE tmis_db OWNER tmis_user;"
+
+# Run migrations
+npx prisma migrate dev
+
+# Seed default admin
+npm run db:seed
+
+# Start dev server with hot-reload
+npm run dev
 ```
-tmis/
-├── backend/                     # Express.js REST API
-│   ├── prisma/
-│   │   ├── schema.prisma        # Database models
-│   │   ├── migrations/          # Migration history
-│   │   └── seed.ts              # Default admin user
-│   ├── src/
-│   │   ├── controllers/         # Request handlers
-│   │   ├── middleware/          # auth, rbac, auditLog, errorHandler
-│   │   ├── routes/              # API route definitions
-│   │   ├── services/            # Business logic
-│   │   └── utils/               # JWT, export helpers
-│   ├── Dockerfile
-│   └── .env.example
-├── frontend/                    # React + Vite SPA
-│   ├── src/
-│   │   ├── api/                 # Axios API modules
-│   │   ├── components/          # Reusable UI components
-│   │   ├── pages/               # One folder per route
-│   │   ├── store/               # Zustand auth state
-│   │   └── hooks/               # useAuth
-│   ├── Dockerfile
-│   └── nginx.conf
-├── docker-compose.yml
-├── .env.example
-└── README.md
+
+Backend → **http://localhost:4000**
+
+### Frontend
+
+```bash
+# In a new terminal
+cd frontend
+npm install
+npm run dev
 ```
+
+Frontend → **http://localhost:5173**
+
+> Vite proxies all `/api/*` requests to `localhost:4000` automatically — no CORS issues.
 
 ---
 
-## API Endpoints Reference
+## API Reference
 
 | Method | Path | Roles | Description |
 |---|---|---|---|
-| POST | `/api/auth/login` | Public | Login |
-| POST | `/api/auth/refresh` | Public | Refresh access token |
-| POST | `/api/auth/logout` | All | Logout |
-| GET/POST | `/api/users` | Admin | List / create users |
-| PATCH | `/api/users/:id/toggle-active` | Admin | Activate / deactivate |
-| GET/POST | `/api/properties` | Admin, Manager | List / create |
-| GET/POST | `/api/units` | Admin, Manager | List / create |
-| GET/POST | `/api/tenants` | Admin, Manager | List / create |
+| POST | `/api/auth/login` | Public | Login, returns JWT pair |
+| POST | `/api/auth/refresh` | Public | Exchange refresh token for new access token |
+| POST | `/api/auth/logout` | All | Revoke refresh token |
+| POST | `/api/auth/password-reset/request` | Public | Request password reset link |
+| POST | `/api/auth/password-reset/confirm` | Public | Set new password via token |
+| GET · POST | `/api/users` | Admin | List / create system users |
+| GET · PUT · DELETE | `/api/users/:id` | Admin | Get / update / soft-delete user |
+| PATCH | `/api/users/:id/toggle-active` | Admin | Activate or deactivate a user |
+| GET · POST | `/api/properties` | Admin, Manager | List / create properties |
+| GET · PUT · DELETE | `/api/properties/:id` | Admin, Manager | Get / update / soft-delete |
+| GET · POST | `/api/units` | Admin, Manager | List / create units |
+| GET · PUT · DELETE | `/api/units/:id` | Admin, Manager | Get / update / soft-delete |
+| GET · POST | `/api/tenants` | Admin, Manager | List / create tenants |
+| GET · PUT · DELETE | `/api/tenants/:id` | Admin, Manager | Get / update / soft-delete |
 | POST | `/api/assignments` | Admin, Manager | Assign tenant to unit |
-| PATCH | `/api/assignments/:id/checkout` | Admin, Manager | Check out tenant |
-| GET/POST | `/api/payments` | Admin, Manager, Accountant | List / record |
-| GET/POST | `/api/bookings` | Admin, Manager | AirBnB bookings |
-| GET | `/api/reports/dashboard` | All | Dashboard KPIs |
-| GET | `/api/reports/rental` | Admin, Manager, Accountant | Rental report |
-| GET | `/api/reports/airbnb` | Admin, Manager, Accountant | AirBnB report |
-| GET | `/api/reports/upcoming-collections` | Admin, Manager, Accountant | Due in 45 days |
-| GET | `/api/reports/export` | Admin, Manager, Accountant | PDF / Excel export |
-| GET | `/api/audit-logs` | Admin | Audit trail |
+| GET | `/api/assignments/unit/:unitId` | Admin, Manager | Assignment history for a unit |
+| PATCH | `/api/assignments/:id/checkout` | Admin, Manager | Check out a tenant |
+| GET · POST | `/api/payments` | Admin, Manager, Accountant | List / record payments |
+| GET | `/api/payments/tenant/:id` | Admin, Manager, Accountant | Full payment ledger for tenant |
+| GET · POST | `/api/bookings` | Admin, Manager | List / create AirBnB bookings |
+| GET · PUT | `/api/bookings/:id` | Admin, Manager | Get / update booking |
+| GET | `/api/reports/dashboard` | All authenticated | KPIs + monthly income + occupancy + upcoming summary |
+| GET | `/api/reports/rental` | Admin, Manager, Accountant | Rental payments report |
+| GET | `/api/reports/airbnb` | Admin, Manager, Accountant | AirBnB bookings report |
+| GET | `/api/reports/occupancy` | Admin, Manager, Accountant | Unit occupancy status |
+| GET | `/api/reports/upcoming-collections` | Admin, Manager, Accountant | Tenants due within 45 days |
+| GET | `/api/reports/export` | Admin, Manager, Accountant | `?format=pdf\|excel&type=rental\|airbnb\|occupancy` |
+| GET | `/api/audit-logs` | Admin | Full audit trail |
 | GET | `/api/health` | Public | Health check |
 
 ---
 
 ## License
 
-MIT — free to use, modify and distribute.
+MIT — free to use, modify, and distribute.
 
 ---
 

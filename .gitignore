@@ -32,3 +32,6 @@ frontend/node_modules/
 # Database
 *.sql.bak
 backups/
+
+# Deploy state
+.tmis_seeded

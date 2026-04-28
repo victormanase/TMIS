@@ -5,14 +5,14 @@ services:
     environment:
       POSTGRES_DB: tmis_db
       POSTGRES_USER: tmis_user
-      POSTGRES_PASSWORD: tmis_password
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-tmis_password}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U tmis_user -d tmis_db"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   backend:
     build:
@@ -23,16 +23,14 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://tmis_user:tmis_password@db:5432/tmis_db
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-this-access-secret-in-production}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-this-refresh-secret-in-production}
+      DATABASE_URL: postgresql://tmis_user:${DB_PASSWORD:-tmis_password}@db:5432/tmis_db
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       PORT: 4000
       NODE_ENV: production
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
-    ports:
-      - "4000:4000"
-    command: >
-      sh -c "npx prisma migrate deploy && node dist/server.js"
+      FRONTEND_URL: http://${SERVER_IP:-localhost}
+    expose:
+      - "4000"
 
   frontend:
     build:
