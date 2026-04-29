@@ -1,38 +1,35 @@
-# ── Stage 1: Build & prune ────────────────────────────────────────────────────
+# ── Stage 1: Build ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 RUN apk add --no-cache openssl
+
 ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+# Cache npm downloads across builds
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 COPY . .
-RUN npm run build && npm run db:generate
 
-# Remove dev dependencies in-place — runner copies the result, no re-download needed
+# Split into separate layers so each caches independently
+RUN npm run build
+RUN npm run db:generate
 RUN npm prune --omit=dev
 
-# ── Stage 2: Production runtime ───────────────────────────────────────────────
+# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 RUN apk add --no-cache openssl
 
 WORKDIR /app
 
 COPY package*.json ./
-
-# Copy compiled app
 COPY --from=builder /app/dist ./dist
-
-# Copy pruned node_modules — includes Prisma CLI, client, and all prod deps
 COPY --from=builder /app/node_modules ./node_modules
-
-# Schema and migrations
 COPY prisma ./prisma
-
-# Startup script
 COPY entrypoint.sh ./entrypoint.sh
+
 RUN chmod +x entrypoint.sh
 
 EXPOSE 4000
