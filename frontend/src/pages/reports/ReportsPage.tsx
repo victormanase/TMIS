@@ -203,12 +203,18 @@ export default function ReportsPage() {
               {loadingAirbnb ? <div className="p-8 text-center text-slate-400">Loading…</div> : (
                 <Table>
                   <TableHead>
-                    <tr><Th>Guest</Th><Th>Unit</Th><Th>Property</Th><Th>Check-In</Th><Th>Check-Out</Th><Th>Nights</Th><Th>Daily Rate</Th><Th>Discount</Th><Th>Total</Th></tr>
+                    <tr><Th>Guest</Th><Th>Phone</Th><Th>Source</Th><Th>Unit</Th><Th>Property</Th><Th>Check-In</Th><Th>Check-Out</Th><Th>Nights</Th><Th>Daily Rate</Th><Th>Discount</Th><Th>Total</Th></tr>
                   </TableHead>
                   <TableBody>
                     {(airbnbData?.bookings ?? []).map((b: any) => (
                       <TableRow key={b.id}>
-                        <Td className="font-medium">{b.tenant?.firstName} {b.tenant?.lastName}</Td>
+                        <Td className="font-medium">{b.guestName}</Td>
+                        <Td className="text-slate-500">{b.guestPhone ?? '—'}</Td>
+                        <Td className="text-xs">
+                          {b.bookingSource === 'OTHER' && b.bookingSourceOther
+                            ? b.bookingSourceOther
+                            : { SELF_BOOKING: 'Self Booking', BOOKING_COM: 'Booking.com', OTHER: 'Others' }[b.bookingSource as string] ?? b.bookingSource}
+                        </Td>
                         <Td>{b.unit?.unitNumber}</Td>
                         <Td>{b.unit?.property?.name}</Td>
                         <Td>{formatDate(b.startDate)}</Td>
@@ -220,7 +226,7 @@ export default function ReportsPage() {
                       </TableRow>
                     ))}
                     {(airbnbData?.bookings ?? []).length === 0 && (
-                      <TableRow><Td colSpan={9} className="text-center text-slate-400 py-8">No AirBnB bookings in this period</Td></TableRow>
+                      <TableRow><Td colSpan={11} className="text-center text-slate-400 py-8">No AirBnB bookings in this period</Td></TableRow>
                     )}
                   </TableBody>
                 </Table>

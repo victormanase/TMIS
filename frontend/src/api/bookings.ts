@@ -1,9 +1,20 @@
 import api from './client';
 
+export type BookingSource = 'SELF_BOOKING' | 'BOOKING_COM' | 'OTHER';
+
+export const BOOKING_SOURCE_LABELS: Record<BookingSource, string> = {
+  SELF_BOOKING: 'Self Booking',
+  BOOKING_COM: 'Booking.com',
+  OTHER: 'Others',
+};
+
 export type Booking = {
   id: string;
   unitId: string;
-  tenantId: string;
+  guestName: string;
+  guestPhone?: string;
+  bookingSource: BookingSource;
+  bookingSourceOther?: string;
   startDate: string;
   endDate: string;
   days: number;
@@ -12,7 +23,6 @@ export type Booking = {
   totalAmount: number;
   notes?: string;
   unit?: { unitNumber: string; property?: { name: string } };
-  tenant?: { id: string; firstName: string; lastName: string; phone: string };
 };
 
 export const bookingsApi = {
@@ -20,16 +30,19 @@ export const bookingsApi = {
     page?: number;
     limit?: number;
     unitId?: string;
-    tenantId?: string;
     dateFrom?: string;
     dateTo?: string;
+    bookingSource?: string;
   }) => api.get('/bookings', { params }).then((r) => r.data),
 
   get: (id: string) => api.get(`/bookings/${id}`).then((r) => r.data.data),
 
   create: (data: {
     unitId: string;
-    tenantId: string;
+    guestName: string;
+    guestPhone?: string;
+    bookingSource: BookingSource;
+    bookingSourceOther?: string;
     startDate: string;
     endDate: string;
     dailyRate: number;
