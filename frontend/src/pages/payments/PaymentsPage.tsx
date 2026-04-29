@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { paymentsApi, type Payment } from '@/api/payments';
 import { tenantsApi } from '@/api/tenants';
 import { unitsApi } from '@/api/units';
@@ -28,7 +28,7 @@ const schema = z.object({
   periodEnd: z.string().min(1, 'Period end is required'),
   notes: z.string().optional(),
 });
-type FormData = z.infer<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 const paymentTypeVariant: Record<string, 'info' | 'success' | 'warning'> = {
   RENT: 'info',
@@ -52,7 +52,7 @@ export default function PaymentsPage() {
   const { data: tenantsData } = useQuery({ queryKey: ['tenants-all'], queryFn: () => tenantsApi.list({ limit: 200 }) });
   const { data: unitsData } = useQuery({ queryKey: ['units-all'], queryFn: () => unitsApi.list({ limit: 200 }) });
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<z.input<typeof schema>, unknown, FormData>({ resolver: zodResolver(schema) });
 
   const createMutation = useMutation({
     mutationFn: (d: FormData) => paymentsApi.create(d as any),

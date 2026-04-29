@@ -46,7 +46,7 @@ export function auditLog(req: AuthRequest, res: Response, next: NextFunction): v
             changes: req.body ?? null,
           },
         })
-        .catch((err) => console.error('Audit log error:', err));
+        .catch((err: unknown) => console.error('Audit log error:', err));
     }
     return originalJson(body);
   };

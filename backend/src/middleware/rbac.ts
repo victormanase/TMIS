@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { Role } from '@prisma/client';
+type Role = 'ADMIN' | 'MANAGER' | 'ACCOUNTANT' | 'VIEWER';
 import { AuthRequest } from './auth';
 import { AppError } from './errorHandler';
 

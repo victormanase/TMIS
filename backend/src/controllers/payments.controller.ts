@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { PaymentType } from '@prisma/client';
+type PaymentType = 'RENT' | 'SERVICE_CHARGE' | 'AIRBNB';
 import { AuthRequest } from '../middleware/auth';
 import * as paymentsService from '../services/payments.service';
 import { success, created, paginated } from '../utils/response';

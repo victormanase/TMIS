@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { UnitType } from '@prisma/client';
+type UnitType = 'APARTMENT' | 'STUDIO' | 'AIRBNB' | 'OTHER';
 import { AuthRequest } from '../middleware/auth';
 import * as unitsService from '../services/units.service';
 import { success, created, paginated } from '../utils/response';

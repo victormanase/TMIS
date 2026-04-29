@@ -7,7 +7,6 @@ import { Plus } from 'lucide-react';
 import { bookingsApi, type Booking } from '@/api/bookings';
 import { tenantsApi } from '@/api/tenants';
 import { unitsApi } from '@/api/units';
-import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -26,7 +25,7 @@ const schema = z.object({
   discount: z.coerce.number().min(0).optional(),
   notes: z.string().optional(),
 });
-type FormData = z.infer<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 export default function BookingsPage() {
   const { isManagerOrAdmin } = useAuth();
@@ -47,7 +46,7 @@ export default function BookingsPage() {
     queryFn: () => unitsApi.list({ limit: 200, unitType: 'AIRBNB' }),
   });
 
-  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { discount: 0 } });
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<z.input<typeof schema>, unknown, FormData>({ resolver: zodResolver(schema), defaultValues: { discount: 0 } });
 
   const [startDate, endDate, dailyRate, discount] = watch(['startDate', 'endDate', 'dailyRate', 'discount']);
 

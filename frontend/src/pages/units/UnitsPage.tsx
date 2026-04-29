@@ -31,7 +31,7 @@ const schema = z.object({
   path: ['monthlyRent'],
 });
 
-type FormData = z.infer<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 export default function UnitsPage() {
   const { isManagerOrAdmin } = useAuth();
@@ -62,7 +62,7 @@ export default function UnitsPage() {
     queryFn: () => propertiesApi.list({ limit: 100 }),
   });
 
-  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<z.input<typeof schema>, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: { serviceCharge: 0, bedrooms: 1 },
   });

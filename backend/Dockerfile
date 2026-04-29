@@ -1,5 +1,7 @@
 # ── Stage 1: Build ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
+RUN apk add --no-cache openssl
+ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
 
 WORKDIR /app
 COPY package*.json ./
@@ -9,6 +11,7 @@ RUN npm run build && npm run db:generate
 
 # ── Stage 2: Production runtime ───────────────────────────────────────────────
 FROM node:20-alpine AS runner
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 COPY package*.json ./

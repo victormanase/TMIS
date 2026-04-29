@@ -12,7 +12,6 @@ import { usersApi, type User } from '@/api/users';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { Modal } from '@/components/ui/Modal';
 import { Table, TableHead, TableBody, TableRow, Th, Td, Pagination } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
@@ -140,6 +139,7 @@ export default function UsersPage() {
   const createForm = useForm<CreateForm>({ resolver: zodResolver(createSchema) });
   const editForm = useForm<EditForm>({ resolver: zodResolver(editSchema) });
   const activeForm = editing ? editForm : createForm;
+  const selectedRole = editing ? editForm.watch('role') : createForm.watch('role');
 
   const saveMutation = useMutation({
     mutationFn: (d: CreateForm | EditForm) => {
@@ -257,7 +257,6 @@ export default function UsersPage() {
                     <td className="px-4 py-2.5 text-slate-700">{p.feature}</td>
                     <td className="px-4 py-2.5 text-center"><Tick yes={p.admin} /></td>
                     <td className="px-4 py-2.5 text-center"><Tick yes={p.manager} /></td>
-                    <td className="px-4 py-2.5 text-center"><Tick yes={p.accountant} /></td>
                     <td className="px-4 py-2.5 text-center"><Tick yes={p.viewer} /></td>
                   </tr>
                 ))}
@@ -451,7 +450,7 @@ export default function UsersPage() {
             <div className="grid grid-cols-2 gap-3">
               {(Object.entries(roleConfig) as [RoleKey, typeof roleConfig[RoleKey]][]).map(([role, cfg]) => {
                 const Icon = cfg.icon;
-                const selected = activeForm.watch('role') === role;
+                const selected = selectedRole === role;
                 return (
                   <label
                     key={role}

@@ -25,7 +25,6 @@ import {
 } from 'lucide-react';
 import { reportsApi } from '@/api/reports';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { formatCurrency } from '@/lib/utils';
 
 const PIE_COLORS = ['#2563eb', '#cbd5e1'];
@@ -85,7 +84,6 @@ export default function DashboardPage() {
   ];
 
   const upcoming = stats?.upcomingCollections;
-  const hasAlert = upcoming && (upcoming.overdue > 0 || upcoming.dueSoon > 0);
 
   return (
     <div className="space-y-6">

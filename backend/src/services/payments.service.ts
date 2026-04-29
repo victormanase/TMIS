@@ -1,4 +1,4 @@
-import { PaymentType } from '@prisma/client';
+type PaymentType = 'RENT' | 'SERVICE_CHARGE' | 'AIRBNB';
 import prisma from '../lib/prisma';
 import { AppError } from '../middleware/errorHandler';
 
@@ -115,7 +115,7 @@ export async function getTenantLedger(tenantId: string) {
     orderBy: { paymentDate: 'desc' },
   });
 
-  const total = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const total = payments.reduce((sum: number, p: { amount: unknown }) => sum + Number(p.amount), 0);
 
   return { tenant, payments, total };
 }

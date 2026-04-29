@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+type Role = 'ADMIN' | 'MANAGER' | 'ACCOUNTANT' | 'VIEWER';
 import prisma from '../lib/prisma';
 import { hashPassword } from '../utils/password';
 import { AppError } from '../middleware/errorHandler';

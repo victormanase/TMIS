@@ -1,4 +1,4 @@
-import { UnitType } from '@prisma/client';
+type UnitType = 'APARTMENT' | 'STUDIO' | 'AIRBNB' | 'OTHER';
 import prisma from '../lib/prisma';
 import { AppError } from '../middleware/errorHandler';
 

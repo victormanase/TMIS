@@ -50,11 +50,11 @@ export async function rentalReport(filters: {
   });
 
   const totalRent = payments
-    .filter((p) => p.paymentType === 'RENT')
-    .reduce((s, p) => s + toNum(p.amount), 0);
+    .filter((p: { paymentType: string }) => p.paymentType === 'RENT')
+    .reduce((s: number, p: { amount: Decimal | number | null }) => s + toNum(p.amount), 0);
   const totalServiceCharge = payments
-    .filter((p) => p.paymentType === 'SERVICE_CHARGE')
-    .reduce((s, p) => s + toNum(p.amount), 0);
+    .filter((p: { paymentType: string }) => p.paymentType === 'SERVICE_CHARGE')
+    .reduce((s: number, p: { amount: Decimal | number | null }) => s + toNum(p.amount), 0);
 
   return {
     summary: {
@@ -96,9 +96,9 @@ export async function airbnbReport(filters: {
     orderBy: { startDate: 'desc' },
   });
 
-  const totalRevenue = bookings.reduce((s, b) => s + toNum(b.totalAmount), 0);
-  const totalNights = bookings.reduce((s, b) => s + b.days, 0);
-  const totalDiscount = bookings.reduce((s, b) => s + toNum(b.discount), 0);
+  const totalRevenue = bookings.reduce((s: number, b: { totalAmount: Decimal | number | null }) => s + toNum(b.totalAmount), 0);
+  const totalNights = bookings.reduce((s: number, b: { days: number }) => s + b.days, 0);
+  const totalDiscount = bookings.reduce((s: number, b: { discount: Decimal | number | null }) => s + toNum(b.discount), 0);
 
   return {
     summary: {
@@ -140,7 +140,7 @@ export async function upcomingCollections(days = 45) {
   });
 
   const results = await Promise.all(
-    assignments.map(async (assignment) => {
+    assignments.map(async (assignment: any) => {
       const latestPayment = await prisma.payment.findFirst({
         where: {
           tenantId: assignment.tenantId,
@@ -207,13 +207,13 @@ export async function occupancyReport(filters: { propertyId?: string }) {
     orderBy: [{ property: { name: 'asc' } }, { unitNumber: 'asc' }],
   });
 
-  const occupied = units.filter((u) => u.assignments.length > 0).length;
+  const occupied = units.filter((u: any) => u.assignments.length > 0).length;
   const vacant = units.length - occupied;
   const occupancyRate = units.length > 0 ? Math.round((occupied / units.length) * 100) : 0;
 
   return {
     summary: { total: units.length, occupied, vacant, occupancyRate },
-    units: units.map((u) => ({
+    units: units.map((u: any) => ({
       ...u,
       status: u.assignments.length > 0 ? 'OCCUPIED' : 'VACANT',
       currentTenant: u.assignments[0]?.tenant ?? null,
@@ -257,8 +257,8 @@ export async function dashboardStats() {
     ]);
 
   const totalRevenue =
-    payments.reduce((s, p) => s + toNum(p.amount), 0) +
-    bookings.reduce((s, b) => s + toNum(b.totalAmount), 0);
+    payments.reduce((s: number, p: { amount: Decimal | number | null }) => s + toNum(p.amount), 0) +
+    bookings.reduce((s: number, b: { totalAmount: Decimal | number | null }) => s + toNum(b.totalAmount), 0);
 
   const vacantUnits = totalUnits - occupiedUnits;
   const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
@@ -272,14 +272,14 @@ export async function dashboardStats() {
     const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
     const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
 
-    const mp = payments.filter((p) => p.paymentDate >= monthStart && p.paymentDate <= monthEnd);
-    const mb = bookings.filter((b) => b.startDate >= monthStart && b.startDate <= monthEnd);
+    const mp = payments.filter((p: { paymentDate: Date }) => p.paymentDate >= monthStart && p.paymentDate <= monthEnd);
+    const mb = bookings.filter((b: { startDate: Date }) => b.startDate >= monthStart && b.startDate <= monthEnd);
 
     monthlyIncome.push({
       month: label,
-      rent: mp.filter((p) => p.paymentType === 'RENT').reduce((s, p) => s + toNum(p.amount), 0),
-      serviceCharge: mp.filter((p) => p.paymentType === 'SERVICE_CHARGE').reduce((s, p) => s + toNum(p.amount), 0),
-      airbnb: mb.reduce((s, b) => s + toNum(b.totalAmount), 0),
+      rent: mp.filter((p: { paymentType: string; amount: Decimal | number | null }) => p.paymentType === 'RENT').reduce((s: number, p: { amount: Decimal | number | null }) => s + toNum(p.amount), 0),
+      serviceCharge: mp.filter((p: { paymentType: string; amount: Decimal | number | null }) => p.paymentType === 'SERVICE_CHARGE').reduce((s: number, p: { amount: Decimal | number | null }) => s + toNum(p.amount), 0),
+      airbnb: mb.reduce((s: number, b: { totalAmount: Decimal | number | null }) => s + toNum(b.totalAmount), 0),
     });
   }
 
