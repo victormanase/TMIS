@@ -128,13 +128,17 @@ export function exportAirbnbPdf(
     doc.fontSize(12).font('Helvetica-Bold').text('Booking Details');
     doc.moveDown(0.3);
 
-    const headers = ['Guest', 'Unit', 'Property', 'Check-In', 'Check-Out', 'Nights', 'Rate/Night', 'Discount', 'Total (TSh)'];
-    const colWidths = [85, 45, 75, 60, 60, 38, 60, 55, 72];
+    const headers = ['Guest', 'Unit', 'Property', 'Check-In', 'Check-Out', 'Nights', 'Rate/Night', 'Discount', 'Source', 'Total (TSh)'];
+    const colWidths = [75, 40, 70, 55, 55, 35, 55, 50, 65, 60];
     drawTableHeader(doc, headers, colWidths);
 
     for (const b of bookings) {
+      const src = (b as any).bookingSource;
+      const srcLabel = src === 'OTHER' && (b as any).bookingSourceOther
+        ? (b as any).bookingSourceOther
+        : { SELF_BOOKING: 'Self Booking', BOOKING_COM: 'Booking.com', OTHER: 'Others' }[src as string] ?? src;
       drawTableRow(doc, [
-        `${(b as any).tenant?.firstName} ${(b as any).tenant?.lastName}`,
+        String((b as any).guestName ?? ''),
         String((b as any).unit?.unitNumber ?? ''),
         String((b as any).unit?.property?.name ?? ''),
         b.startDate ? new Date(b.startDate as string).toLocaleDateString() : '',
@@ -142,6 +146,7 @@ export function exportAirbnbPdf(
         String(b.days ?? ''),
         `TSh ${Number(b.dailyRate ?? 0).toLocaleString()}`,
         `TSh ${Number(b.discount ?? 0).toLocaleString()}`,
+        srcLabel,
         Number(b.totalAmount ?? 0).toLocaleString(),
       ], colWidths);
     }

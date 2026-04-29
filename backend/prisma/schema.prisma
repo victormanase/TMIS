@@ -101,7 +101,6 @@ model Tenant {
 
   assignments TenantAssignment[]
   payments    Payment[]
-  bookings    AirBnBBooking[]
 
   @@map("tenants")
 }
@@ -144,21 +143,23 @@ model Payment {
 }
 
 model AirBnBBooking {
-  id          String   @id @default(cuid())
-  unitId      String
-  tenantId    String
-  startDate   DateTime
-  endDate     DateTime
-  days        Int
-  dailyRate   Decimal  @db.Decimal(12, 2)
-  discount    Decimal  @default(0) @db.Decimal(12, 2)
-  totalAmount Decimal  @db.Decimal(12, 2)
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  unitId             String
+  guestName          String
+  guestPhone         String?
+  bookingSource      String   @default("SELF_BOOKING")
+  bookingSourceOther String?
+  startDate          DateTime
+  endDate            DateTime
+  days               Int
+  dailyRate          Decimal  @db.Decimal(12, 2)
+  discount           Decimal  @default(0) @db.Decimal(12, 2)
+  totalAmount        Decimal  @db.Decimal(12, 2)
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  unit   Unit   @relation(fields: [unitId], references: [id])
-  tenant Tenant @relation(fields: [tenantId], references: [id])
+  unit Unit @relation(fields: [unitId], references: [id])
 
   @@map("airbnb_bookings")
 }

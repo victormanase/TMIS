@@ -84,7 +84,6 @@ export async function airbnbReport(filters: {
   const bookings = await prisma.airBnBBooking.findMany({
     where,
     include: {
-      tenant: { select: { id: true, firstName: true, lastName: true, phone: true } },
       unit: {
         select: {
           unitNumber: true,

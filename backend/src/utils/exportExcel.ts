@@ -107,7 +107,8 @@ export async function exportAirbnbExcel(
   const ws2 = wb.addWorksheet('Bookings');
   ws2.columns = [
     { header: 'Guest Name', key: 'tenant', width: 28 },
-    { header: 'Phone', key: 'phone', width: 18 },
+    { header: 'Guest Phone', key: 'phone', width: 18 },
+    { header: 'Booking Source', key: 'bookingSource', width: 20 },
     { header: 'Unit', key: 'unit', width: 12 },
     { header: 'Property', key: 'property', width: 25 },
     { header: 'Check-In', key: 'startDate', width: 18 },
@@ -120,9 +121,14 @@ export async function exportAirbnbExcel(
   ];
   styleHeader(ws2.getRow(1));
   for (const b of bookings) {
+    const src = (b as any).bookingSource;
+    const srcLabel = src === 'OTHER' && (b as any).bookingSourceOther
+      ? (b as any).bookingSourceOther
+      : { SELF_BOOKING: 'Self Booking', BOOKING_COM: 'Booking.com', OTHER: 'Others' }[src as string] ?? src;
     ws2.addRow({
-      tenant: `${(b as any).tenant?.firstName} ${(b as any).tenant?.lastName}`,
-      phone: (b as any).tenant?.phone ?? '',
+      tenant: (b as any).guestName ?? '',
+      phone: (b as any).guestPhone ?? '',
+      bookingSource: srcLabel,
       unit: (b as any).unit?.unitNumber,
       property: (b as any).unit?.property?.name,
       startDate: b.startDate,

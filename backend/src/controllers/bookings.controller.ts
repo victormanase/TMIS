@@ -9,9 +9,9 @@ export async function list(req: AuthRequest, res: Response, next: NextFunction) 
     const limit = Number(req.query.limit) || 20;
     const { bookings, total } = await bookingsService.listBookings(page, limit, {
       unitId: req.query.unitId as string | undefined,
-      tenantId: req.query.tenantId as string | undefined,
       dateFrom: req.query.dateFrom as string | undefined,
       dateTo: req.query.dateTo as string | undefined,
+      bookingSource: req.query.bookingSource as string | undefined,
     });
     paginated(res, bookings, total, page, limit);
   } catch (err) {
