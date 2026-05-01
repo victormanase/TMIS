@@ -7,15 +7,16 @@ import { authApi } from '@/api/auth';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
-import { ArrowLeft } from 'lucide-react';
 
-const schema = z.object({ email: z.string().email() });
+const schema = z.object({ email: z.string().email('Invalid email') });
 type FormData = z.infer<typeof schema>;
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -27,25 +28,47 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-700 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
-        <Link to="/login" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-6">
-          <ArrowLeft size={14} /> Back to login
-        </Link>
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Reset Password</h2>
-        <p className="text-slate-500 text-sm mb-6">Enter your email address and we'll send you a reset link.</p>
+    <div className="lbd-login-page">
+      <div className="card lbd-login-card shadow-lg">
+        <div className="card-body p-4 p-md-5">
+          <Link
+            to="/login"
+            className="d-inline-flex align-items-center gap-1 mb-4 text-muted"
+            style={{ fontSize: 13, textDecoration: 'none' }}
+          >
+            <i className="fas fa-arrow-left" /> Back to login
+          </Link>
 
-        {sent ? (
-          <Alert variant="success" message="If that email exists in our system, you'll receive a password reset link shortly." />
-        ) : (
-          <>
-            {error && <Alert variant="error" message={error} className="mb-4" />}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <Input id="email" label="Email Address" type="email" error={errors.email?.message} {...register('email')} />
-              <Button type="submit" loading={isSubmitting} className="w-full">Send Reset Link</Button>
-            </form>
-          </>
-        )}
+          <h4 className="fw-bold mb-1" style={{ color: '#333' }}>Reset Password</h4>
+          <p className="text-muted small mb-4">
+            Enter your email address and we&apos;ll send you a reset link.
+          </p>
+
+          {sent ? (
+            <Alert
+              variant="success"
+              message="If that email exists in our system, you'll receive a password reset link shortly."
+            />
+          ) : (
+            <>
+              {error && <Alert variant="error" message={error} className="mb-3" />}
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="mb-3">
+                  <Input
+                    id="email"
+                    label="Email Address"
+                    type="email"
+                    error={errors.email?.message}
+                    {...register('email')}
+                  />
+                </div>
+                <Button type="submit" loading={isSubmitting} className="w-100">
+                  Send Reset Link
+                </Button>
+              </form>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, UserPlus, LogOut } from 'lucide-react';
 import { unitsApi, assignmentsApi, type Assignment } from '@/api/units';
 import { tenantsApi } from '@/api/tenants';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -67,11 +66,11 @@ export default function UnitDetailPage() {
   const tenants = tenantsData?.data ?? [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link to="/units" className="p-2 hover:bg-slate-100 rounded-lg text-slate-500"><ArrowLeft size={18} /></Link>
+    <div className="d-flex flex-column gap-4">
+      <div className="d-flex align-items-center gap-3">
+        <Link to="/units" className="p-2 hover:bg-slate-100 rounded-lg text-slate-500"><i className="fas fa-arrow-left" /></Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Unit {unit.unitNumber}</h1>
+          <h1 className="fw-bold mb-1" style={{ fontSize: 22, color: '#333' }}>Unit {unit.unitNumber}</h1>
           <p className="text-sm text-slate-500">{unit.property?.name} · {unit.property?.location}</p>
         </div>
         <Badge variant={activeAssignment ? 'success' : 'default'} className="ml-auto">
@@ -80,17 +79,17 @@ export default function UnitDetailPage() {
       </div>
 
       {/* Unit Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="row g-2">
         <Card>
           <CardContent className="py-4">
             <p className="text-xs text-slate-400 mb-1">Unit Type</p>
-            <p className="font-semibold">{unit.unitType}</p>
+            <p className="fw-semibold">{unit.unitType}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4">
             <p className="text-xs text-slate-400 mb-1">Bedrooms</p>
-            <p className="font-semibold">{unit.bedrooms}</p>
+            <p className="fw-semibold">{unit.bedrooms}</p>
           </CardContent>
         </Card>
         <Card>
@@ -98,7 +97,7 @@ export default function UnitDetailPage() {
             <p className="text-xs text-slate-400 mb-1">
               {unit.unitType === 'AIRBNB' ? 'Daily Rate' : 'Monthly Rent'}
             </p>
-            <p className="font-semibold">
+            <p className="fw-semibold">
               {unit.unitType === 'AIRBNB'
                 ? formatCurrency(unit.dailyRate ?? 0)
                 : formatCurrency(unit.monthlyRent ?? 0)}
@@ -113,15 +112,15 @@ export default function UnitDetailPage() {
           <CardTitle>Current Occupant</CardTitle>
           {isManagerOrAdmin() && !activeAssignment && (
             <Button size="sm" onClick={() => { setFormError(''); setAssignModal(true); }}>
-              <UserPlus size={14} className="mr-1" /> Assign Tenant
+              <i className="fas fa-user-plus me-1" /> Assign Tenant
             </Button>
           )}
         </CardHeader>
         <CardContent>
           {activeAssignment ? (
-            <div className="flex items-center justify-between">
+            <div className="d-flex align-items-center justify-content-between">
               <div>
-                <p className="font-medium">
+                <p className="fw-medium">
                   {activeAssignment.tenant?.firstName} {activeAssignment.tenant?.lastName}
                 </p>
                 <p className="text-sm text-slate-500">{activeAssignment.tenant?.phone}</p>
@@ -136,7 +135,7 @@ export default function UnitDetailPage() {
                   loading={checkoutMutation.isPending}
                   onClick={() => checkoutMutation.mutate(activeAssignment.id)}
                 >
-                  <LogOut size={14} className="mr-1" /> Check Out
+                  <i className="fas fa-sign-out-alt me-1" /> Check Out
                 </Button>
               )}
             </div>
@@ -175,7 +174,7 @@ export default function UnitDetailPage() {
                 </TableRow>
               ))}
               {(unit.assignments ?? []).length === 0 && (
-                <TableRow><Td colSpan={5} className="text-center text-slate-400 py-6">No assignment history</Td></TableRow>
+                <TableRow><Td colSpan={5} className="text-center text-muted py-4">No assignment history</Td></TableRow>
               )}
             </TableBody>
           </Table>
@@ -185,7 +184,7 @@ export default function UnitDetailPage() {
       {/* Assign Modal */}
       <Modal isOpen={assignModal} onClose={() => setAssignModal(false)} title="Assign Tenant" size="sm">
         {formError && <Alert variant="error" message={formError} className="mb-4" />}
-        <form onSubmit={handleSubmit((d) => assignMutation.mutate(d))} className="space-y-4">
+        <form onSubmit={handleSubmit((d) => assignMutation.mutate(d))} className="d-flex flex-column gap-3">
           <Select
             id="tenantId"
             label="Select Tenant *"
@@ -195,7 +194,7 @@ export default function UnitDetailPage() {
             {...register('tenantId')}
           />
           <Input id="checkInDate" label="Check-In Date *" type="date" error={errors.checkInDate?.message} {...register('checkInDate')} />
-          <div className="flex justify-end gap-3">
+          <div className="d-flex justify-content-end gap-3">
             <Button variant="outline" type="button" onClick={() => setAssignModal(false)}>Cancel</Button>
             <Button type="submit" loading={isSubmitting || assignMutation.isPending}>Assign</Button>
           </div>

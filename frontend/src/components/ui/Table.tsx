@@ -1,37 +1,32 @@
 import type { HTMLAttributes, ThHTMLAttributes, TdHTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
+import { Table as BsTable } from 'react-bootstrap';
 
 export function Table({ className, ...props }: HTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200">
-      <table className={cn('w-full text-sm', className)} {...props} />
+    <div className="table-responsive">
+      <BsTable hover className={`mb-0 ${className ?? ''}`} {...(props as any)} />
     </div>
   );
 }
 
-export function TableHead({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className={cn('bg-slate-50 border-b border-slate-200', className)} {...props} />;
+export function TableHead({ ...props }: HTMLAttributes<HTMLTableSectionElement>) {
+  return <thead {...props} />;
 }
 
-export function TableBody({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
-  return <tbody className={cn('divide-y divide-slate-100', className)} {...props} />;
+export function TableBody({ ...props }: HTMLAttributes<HTMLTableSectionElement>) {
+  return <tbody {...props} />;
 }
 
-export function TableRow({ className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
-  return <tr className={cn('hover:bg-slate-50 transition-colors', className)} {...props} />;
+export function TableRow({ ...props }: HTMLAttributes<HTMLTableRowElement>) {
+  return <tr {...props} />;
 }
 
 export function Th({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
-  return (
-    <th
-      className={cn('px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide', className)}
-      {...props}
-    />
-  );
+  return <th className={className} {...props} />;
 }
 
 export function Td({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td className={cn('px-4 py-3 text-slate-700', className)} {...props} />;
+  return <td className={className} {...props} />;
 }
 
 interface PaginationProps {
@@ -42,22 +37,20 @@ interface PaginationProps {
 
 export function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-white rounded-b-lg">
-      <p className="text-sm text-slate-500">
-        Page {page} of {totalPages}
-      </p>
-      <div className="flex gap-2">
+    <div className="d-flex align-items-center justify-content-between px-3 py-2 border-top bg-white">
+      <small className="text-muted">Page {page} of {totalPages}</small>
+      <div className="d-flex gap-2">
         <button
+          className="btn btn-sm btn-outline-secondary"
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Previous
         </button>
         <button
+          className="btn btn-sm btn-outline-secondary"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Next
         </button>

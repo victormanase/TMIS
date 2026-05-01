@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Pencil, Trash2, Building2, Search } from 'lucide-react';
 import { propertiesApi, type Property } from '@/api/properties';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -85,15 +84,15 @@ export default function PropertiesPage() {
   const pagination = data?.pagination;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="d-flex flex-column gap-4">
+      <div className="d-flex align-items-center justify-content-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Properties</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage your rental properties</p>
+          <h1 className="fw-bold mb-1" style={{ fontSize: 22, color: '#333' }}>Properties</h1>
+          <p className="text-muted small mt-1">Manage your rental properties</p>
         </div>
         {isManagerOrAdmin() && (
           <Button onClick={openCreate} className="gap-2">
-            <Plus size={16} /> Add Property
+            <i className="fas fa-plus" /> Add Property
           </Button>
         )}
       </div>
@@ -101,10 +100,10 @@ export default function PropertiesPage() {
       {/* Search */}
       <Card>
         <CardContent className="py-3">
-          <div className="relative max-w-sm">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="position-relative" style={{ maxWidth: 320 }}>
+            <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: 13 }} />
             <input
-              className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-control form-control-sm ps-5"
               placeholder="Search properties…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -116,9 +115,9 @@ export default function PropertiesPage() {
       {/* Table */}
       <div>
         {isLoading ? (
-          <div className="space-y-2">
+          <div className="d-flex flex-column gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-14 bg-slate-100 rounded-lg animate-pulse" />
+              <div key={i} className="rounded animate-pulse-lbd" style={{ height: 56, background: '#f0f0f0' }} />
             ))}
           </div>
         ) : (
@@ -136,16 +135,16 @@ export default function PropertiesPage() {
               <TableBody>
                 {properties.length === 0 ? (
                   <TableRow>
-                    <Td colSpan={5} className="text-center text-slate-400 py-8">
+                    <Td colSpan={5} className="text-center text-muted py-5">
                       No properties found
                     </Td>
                   </TableRow>
                 ) : (
                   properties.map((p: Property) => (
                     <TableRow key={p.id}>
-                      <Td className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <Building2 size={16} className="text-blue-500" />
+                      <Td className="fw-medium">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="fas fa-building" style={{ color: 'var(--lbd-primary)' }} />
                           {p.name}
                         </div>
                       </Td>
@@ -158,18 +157,18 @@ export default function PropertiesPage() {
                       </Td>
                       {isManagerOrAdmin() && (
                         <Td>
-                          <div className="flex items-center gap-2">
+                          <div className="d-flex align-items-center gap-2">
                             <button
                               onClick={() => openEdit(p)}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              className="btn btn-sm btn-outline-secondary border-0 px-2 py-1"
                             >
-                              <Pencil size={14} />
+                              <i className="fas fa-edit" />
                             </button>
                             <button
                               onClick={() => setDeleteId(p.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                              className="btn btn-sm btn-outline-danger border-0 px-2 py-1"
                             >
-                              <Trash2 size={14} />
+                              <i className="fas fa-trash-alt" />
                             </button>
                           </div>
                         </Td>
@@ -193,10 +192,10 @@ export default function PropertiesPage() {
         title={editing ? 'Edit Property' : 'Add Property'}
       >
         {formError && <Alert variant="error" message={formError} className="mb-4" />}
-        <form onSubmit={handleSubmit((d) => saveMutation.mutate(d))} className="space-y-4">
+        <form onSubmit={handleSubmit((d) => saveMutation.mutate(d))} className="d-flex flex-column gap-3">
           <Input id="name" label="Property Name *" error={errors.name?.message} {...register('name')} />
           <Input id="location" label="Location *" error={errors.location?.message} {...register('location')} />
-          <div className="flex flex-col gap-1">
+          <div className="d-flex flex-column gap-1">
             <label htmlFor="description" className="text-sm font-medium text-slate-700">Description</label>
             <textarea
               id="description"
@@ -206,7 +205,7 @@ export default function PropertiesPage() {
               {...register('description')}
             />
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="d-flex justify-content-end gap-3 pt-2">
             <Button variant="outline" type="button" onClick={closeModal}>Cancel</Button>
             <Button type="submit" loading={isSubmitting || saveMutation.isPending}>
               {editing ? 'Save Changes' : 'Create Property'}
@@ -220,7 +219,7 @@ export default function PropertiesPage() {
         <p className="text-slate-600 text-sm mb-4">
           Are you sure you want to delete this property? The property will be soft-deleted and can be recovered.
         </p>
-        <div className="flex justify-end gap-3">
+        <div className="d-flex justify-content-end gap-3">
           <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
           <Button
             variant="danger"

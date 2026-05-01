@@ -3,11 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Plus, Pencil, ToggleLeft, ToggleRight, Trash2, Search,
-  Check, X, ShieldCheck, Briefcase, Calculator, Eye as EyeIcon,
-  Users, UserCheck, UserX,
-} from 'lucide-react';
 import { usersApi, type User } from '@/api/users';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -115,8 +110,8 @@ function Initials({ name, role }: { name: string; role: RoleKey }) {
 
 function Tick({ yes }: { yes: boolean }) {
   return yes
-    ? <Check size={15} className="text-emerald-500 mx-auto" />
-    : <X size={15} className="text-slate-300 mx-auto" />;
+    ? <i className="fas fa-check text-success d-block text-center" />
+    : <i className="fas fa-times text-secondary d-block text-center" />;
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -194,29 +189,29 @@ export default function UsersPage() {
   const inactiveCount = users.length - activeCount;
 
   return (
-    <div className="space-y-6">
+    <div className="d-flex flex-column gap-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="d-flex align-items-center justify-content-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">User Management</h1>
-          <p className="text-sm text-slate-500 mt-1">Create accounts, assign roles and control access</p>
+          <h1 className="fw-bold mb-1" style={{ fontSize: 22, color: '#333' }}>User Management</h1>
+          <p className="text-muted small mt-1">Create accounts, assign roles and control access</p>
         </div>
-        <div className="flex gap-2">
+        <div className="d-flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowMatrix(!showMatrix)}>
             {showMatrix ? 'Hide' : 'Show'} Permissions
           </Button>
-          <Button onClick={openCreate}><Plus size={16} className="mr-1" /> Add User</Button>
+          <Button onClick={openCreate}><i className="fas fa-plus me-1" /> Add User</Button>
         </div>
       </div>
 
       {/* Role cards — what each role can do */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="row g-2">
         {(Object.entries(roleConfig) as [RoleKey, typeof roleConfig[RoleKey]][]).map(([role, cfg]) => {
           const Icon = cfg.icon;
           return (
             <Card key={role} className={cn('border', cfg.color.split(' ').find(c => c.startsWith('border')))}>
               <CardContent className="py-4 space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="d-flex align-items-center justify-content-between">
                   <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border', cfg.color)}>
                     <Icon size={12} /> {cfg.label}
                   </span>
@@ -284,10 +279,10 @@ export default function UsersPage() {
       {/* Search */}
       <Card>
         <CardContent className="py-3">
-          <div className="relative max-w-sm">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="position-relative" style={{ maxWidth: 320 }}>
+            <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: 13 }} />
             <input
-              className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-control form-control-sm ps-5"
               placeholder="Search by name or email…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -298,8 +293,8 @@ export default function UsersPage() {
 
       {/* Users table */}
       {isLoading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-16 bg-slate-100 rounded-lg animate-pulse" />)}
+        <div className="d-flex flex-column gap-2">
+          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="rounded animate-pulse-lbd" style={{ height: 56, background: '#f0f0f0' }} />)}
         </div>
       ) : (
         <>
@@ -317,7 +312,7 @@ export default function UsersPage() {
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
-                  <Td colSpan={6} className="text-center text-slate-400 py-10">No users found</Td>
+                  <Td colSpan={6} className="text-center text-muted py-5">No users found</Td>
                 </TableRow>
               ) : (
                 users.map((u) => {
@@ -326,16 +321,16 @@ export default function UsersPage() {
                   return (
                     <TableRow key={u.id}>
                       <Td>
-                        <div className="flex items-center gap-3">
+                        <div className="d-flex align-items-center gap-3">
                           <Initials name={`${u.firstName} ${u.lastName}`} role={u.role as RoleKey} />
                           <div>
-                            <p className="font-medium text-slate-900">{u.firstName} {u.lastName}</p>
-                            <p className="text-xs text-slate-400">Since {new Date(u.createdAt).toLocaleDateString()}</p>
+                            <p className="fw-medium">{u.firstName} {u.lastName}</p>
+                            <p className="text-muted small">Since {new Date(u.createdAt).toLocaleDateString()}</p>
                           </div>
                         </div>
                       </Td>
-                      <Td className="text-slate-600">{u.email}</Td>
-                      <Td className="text-slate-600">{u.phone ?? '—'}</Td>
+                      <Td className="text-secondary">{u.email}</Td>
+                      <Td className="text-secondary">{u.phone ?? '—'}</Td>
                       <Td>
                         <span className={cn(
                           'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border',
@@ -350,14 +345,14 @@ export default function UsersPage() {
                         </Badge>
                       </Td>
                       <Td>
-                        <div className="flex items-center gap-1">
+                        <div className="d-flex align-items-center gap-1">
                           {/* Edit */}
                           <button
                             onClick={() => openEdit(u)}
                             title="Edit user"
-                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            className="btn btn-sm btn-outline-secondary border-0 px-2 py-1"
                           >
-                            <Pencil size={14} />
+                            <i className="fas fa-edit" />
                           </button>
 
                           {/* Toggle active */}
@@ -378,9 +373,9 @@ export default function UsersPage() {
                           <button
                             onClick={() => setDeleteTarget(u)}
                             title="Delete user"
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="btn btn-sm btn-outline-danger border-0 px-2 py-1"
                           >
-                            <Trash2 size={14} />
+                            <i className="fas fa-trash-alt" />
                           </button>
                         </div>
                       </Td>
@@ -410,7 +405,7 @@ export default function UsersPage() {
             <Initials name={`${editing.firstName} ${editing.lastName}`} role={editing.role as RoleKey} />
             <div>
               <p className="text-sm font-medium text-slate-900">{editing.firstName} {editing.lastName}</p>
-              <p className="text-xs text-slate-500">{editing.email}</p>
+              <p className="text-muted small">{editing.email}</p>
             </div>
             <Badge variant={editing.isActive ? 'success' : 'danger'} className="ml-auto">
               {editing.isActive ? 'Active' : 'Inactive'}
@@ -420,9 +415,9 @@ export default function UsersPage() {
 
         <form
           onSubmit={activeForm.handleSubmit((d) => saveMutation.mutate(d as any))}
-          className="space-y-4"
+          className="d-flex flex-column gap-3"
         >
-          <div className="grid grid-cols-2 gap-4">
+          <div className="row g-2">
             <Input
               id="firstName" label="First Name *"
               error={activeForm.formState.errors.firstName?.message}
@@ -445,9 +440,9 @@ export default function UsersPage() {
           </div>
 
           {/* Role selector with description */}
-          <div className="space-y-2">
+          <div className="d-flex flex-column gap-2">
             <label className="text-sm font-medium text-slate-700">Role *</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="row g-2">
               {(Object.entries(roleConfig) as [RoleKey, typeof roleConfig[RoleKey]][]).map(([role, cfg]) => {
                 const Icon = cfg.icon;
                 const selected = selectedRole === role;
@@ -483,7 +478,7 @@ export default function UsersPage() {
             {...activeForm.register('password')}
           />
 
-          <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+          <div className="d-flex justify-content-end gap-3 pt-3 mt-2 border-top">
             <Button variant="outline" type="button" onClick={closeModal}>Cancel</Button>
             <Button
               type="submit"
@@ -508,13 +503,13 @@ export default function UsersPage() {
               <Initials name={`${deleteTarget.firstName} ${deleteTarget.lastName}`} role={deleteTarget.role as RoleKey} />
               <div>
                 <p className="text-sm font-medium text-slate-900">{deleteTarget.firstName} {deleteTarget.lastName}</p>
-                <p className="text-xs text-slate-500">{deleteTarget.role} · {deleteTarget.email}</p>
+                <p className="text-muted small">{deleteTarget.role} · {deleteTarget.email}</p>
               </div>
             </div>
             <p className="text-sm text-slate-600 mb-5">
               This user will be permanently removed. All their recorded actions in the audit log will be preserved, but they will no longer be able to log in.
             </p>
-            <div className="flex justify-end gap-3">
+            <div className="d-flex justify-content-end gap-3">
               <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
               <Button
                 variant="danger"

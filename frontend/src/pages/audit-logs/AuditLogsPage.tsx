@@ -25,16 +25,16 @@ export default function AuditLogsPage() {
   const entities = ['users', 'properties', 'units', 'tenants', 'assignments', 'payments', 'bookings'];
 
   return (
-    <div className="space-y-6">
+    <div className="d-flex flex-column gap-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Audit Logs</h1>
-        <p className="text-sm text-slate-500 mt-1">Full trail of all system actions</p>
+        <h1 className="fw-bold mb-1" style={{ fontSize: 22, color: '#333' }}>Audit Logs</h1>
+        <p className="text-muted small mt-1">Full trail of all system actions</p>
       </div>
 
       <Card>
         <CardContent className="py-3">
           <select
-            className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="form-select form-select-sm"
             value={entity}
             onChange={(e) => { setEntity(e.target.value); setPage(1); }}
           >
@@ -45,7 +45,7 @@ export default function AuditLogsPage() {
       </Card>
 
       {isLoading ? (
-        <div className="space-y-2">{Array.from({ length: 10 }).map((_, i) => <div key={i} className="h-12 bg-slate-100 rounded animate-pulse" />)}</div>
+        <div className="d-flex flex-column gap-2">{Array.from({ length: 10 }).map((_, i) => <div key={i} className="rounded mb-2" style={{ height: 48, background: '#f0f0f0' }} />)}</div>
       ) : (
         <>
           <Table>
@@ -54,17 +54,17 @@ export default function AuditLogsPage() {
             </TableHead>
             <TableBody>
               {logs.length === 0 ? (
-                <TableRow><Td colSpan={5} className="text-center text-slate-400 py-8">No audit logs found</Td></TableRow>
+                <TableRow><Td colSpan={5} className="text-center text-muted py-5">No audit logs found</Td></TableRow>
               ) : (
                 logs.map((log: any) => (
                   <TableRow key={log.id}>
                     <Td className="text-xs text-slate-500 whitespace-nowrap">{formatDateTime(log.createdAt)}</Td>
                     <Td>
                       <p className="font-medium text-sm">{log.user?.firstName} {log.user?.lastName}</p>
-                      <p className="text-xs text-slate-400">{log.user?.email}</p>
+                      <p className="text-muted small">{log.user?.email}</p>
                     </Td>
                     <Td><Badge variant={actionVariant[log.action] ?? 'default'}>{log.action}</Badge></Td>
-                    <Td className="capitalize">{log.entity}</Td>
+                    <Td className="text-capitalize">{log.entity}</Td>
                     <Td className="text-xs text-slate-400 font-mono">{log.entityId.slice(0, 16)}…</Td>
                   </TableRow>
                 ))

@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus } from 'lucide-react';
 import { bookingsApi, type Booking, BOOKING_SOURCE_LABELS } from '@/api/bookings';
 import { unitsApi } from '@/api/units';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -116,16 +115,16 @@ export default function BookingsPage() {
   const airbnbUnits = unitsData?.data ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="d-flex flex-column gap-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="d-flex align-items-center justify-content-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">AirBnB Bookings</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage short-stay guest bookings</p>
+          <h1 className="fw-bold mb-1" style={{ fontSize: 22, color: '#333' }}>AirBnB Bookings</h1>
+          <p className="text-muted small mt-1">Manage short-stay guest bookings</p>
         </div>
         {isManagerOrAdmin() && (
           <Button onClick={openModal}>
-            <Plus size={16} className="mr-1" /> New Booking
+            <i className="fas fa-plus me-1" /> New Booking
           </Button>
         )}
       </div>
@@ -133,10 +132,10 @@ export default function BookingsPage() {
       {/* Filter by source */}
       <Card>
         <CardContent className="py-3">
-          <div className="flex items-center gap-3">
+          <div className="d-flex align-items-center gap-3">
             <label className="text-sm text-slate-500">Filter by source:</label>
             <select
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-select form-select-sm"
               value={filterSource}
               onChange={(e) => { setFilterSource(e.target.value); setPage(1); }}
             >
@@ -151,9 +150,9 @@ export default function BookingsPage() {
 
       {/* Table */}
       {isLoading ? (
-        <div className="space-y-2">
+        <div className="d-flex flex-column gap-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-14 bg-slate-100 rounded-lg animate-pulse" />
+            <div key={i} className="rounded animate-pulse-lbd" style={{ height: 56, background: '#f0f0f0' }} />
           ))}
         </div>
       ) : (
@@ -176,7 +175,7 @@ export default function BookingsPage() {
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
-                  <Td colSpan={10} className="text-center text-slate-400 py-8">
+                  <Td colSpan={10} className="text-center text-muted py-5">
                     No bookings found
                   </Td>
                 </TableRow>
@@ -188,8 +187,8 @@ export default function BookingsPage() {
                       : BOOKING_SOURCE_LABELS[b.bookingSource] ?? b.bookingSource;
                   return (
                     <TableRow key={b.id}>
-                      <Td className="font-medium">{b.guestName}</Td>
-                      <Td className="text-slate-500">{b.guestPhone ?? '—'}</Td>
+                      <Td className="fw-medium">{b.guestName}</Td>
+                      <Td className="text-muted">{b.guestPhone ?? '—'}</Td>
                       <Td>
                         <Badge variant={sourceVariant[b.bookingSource] ?? 'default'}>
                           {sourceLabel}
@@ -201,7 +200,7 @@ export default function BookingsPage() {
                       <Td>{b.days}</Td>
                       <Td>{formatCurrency(b.dailyRate)}</Td>
                       <Td>{formatCurrency(b.discount)}</Td>
-                      <Td className="font-semibold">{formatCurrency(b.totalAmount)}</Td>
+                      <Td className="fw-semibold">{formatCurrency(b.totalAmount)}</Td>
                     </TableRow>
                   );
                 })
@@ -217,11 +216,11 @@ export default function BookingsPage() {
       {/* New Booking Modal */}
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="New AirBnB Booking" size="lg">
         {formError && <Alert variant="error" message={formError} className="mb-4" />}
-        <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="d-flex flex-column gap-3">
+          <div className="row g-2">
 
             {/* Unit */}
-            <div className="col-span-2">
+            <div className="col-12">
               <Select
                 id="unitId"
                 label="AirBnB Unit *"
@@ -254,7 +253,7 @@ export default function BookingsPage() {
             />
 
             {/* Booking Source */}
-            <div className="col-span-2 grid grid-cols-2 gap-4">
+            <div className="row g-2">
               <Select
                 id="bookingSource"
                 label="Booking Source *"
@@ -313,11 +312,11 @@ export default function BookingsPage() {
             />
 
             {/* Notes */}
-            <div className="col-span-2">
+            <div className="col-12">
               <label className="text-sm font-medium text-slate-700 block mb-1">Notes</label>
               <textarea
                 rows={2}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-control"
                 placeholder="Any special requests or remarks…"
                 {...register('notes')}
               />
@@ -327,17 +326,17 @@ export default function BookingsPage() {
           {/* Live price preview */}
           {preview.days > 0 && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm flex items-center justify-between">
-              <span className="text-slate-600">
+              <span className="text-secondary">
                 <strong>{preview.days}</strong> night{preview.days !== 1 ? 's' : ''}
               </span>
-              <span className="text-slate-600">
+              <span className="text-secondary">
                 Total:{' '}
                 <strong className="text-blue-700 text-base">{formatCurrency(preview.total)}</strong>
               </span>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+          <div className="d-flex justify-content-end gap-3 pt-3 mt-2 border-top">
             <Button variant="outline" type="button" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>

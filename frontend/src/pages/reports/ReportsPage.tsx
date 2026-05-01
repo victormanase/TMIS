@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FileSpreadsheet, FileText, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 import { reportsApi } from '@/api/reports';
 import { propertiesApi } from '@/api/properties';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -56,14 +55,14 @@ export default function ReportsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="d-flex flex-column gap-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Reports</h1>
-        <p className="text-sm text-slate-500 mt-1">Rental income, AirBnB bookings, and collection forecasts</p>
+        <h1 className="fw-bold mb-1" style={{ fontSize: 22, color: '#333' }}>Reports</h1>
+        <p className="text-muted small mt-1">Rental income, AirBnB bookings, and collection forecasts</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+      <div className="d-flex gap-1 bg-light rounded p-1 w-auto">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -81,9 +80,9 @@ export default function ReportsPage() {
       {tab !== 'upcoming' && (
         <Card>
           <CardContent className="py-3">
-            <div className="flex flex-wrap gap-3 items-end">
+            <div className="d-flex flex-wrap gap-3 align-items-end">
               <select
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                className="form-control form-control-sm"
                 value={filters.propertyId}
                 onChange={(e) => setFilters({ ...filters, propertyId: e.target.value })}
               >
@@ -92,12 +91,12 @@ export default function ReportsPage() {
               </select>
               <div>
                 <label className="text-xs text-slate-500 block mb-1">From</label>
-                <input type="date" className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                <input type="date" className="form-control form-control-sm"
                   value={filters.dateFrom} onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })} />
               </div>
               <div>
                 <label className="text-xs text-slate-500 block mb-1">To</label>
-                <input type="date" className="border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                <input type="date" className="form-control form-control-sm"
                   value={filters.dateTo} onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })} />
               </div>
               <Button onClick={applyFilters} size="sm">Apply</Button>
@@ -109,9 +108,9 @@ export default function ReportsPage() {
 
       {/* ── Rental Report ── */}
       {tab === 'rental' && (
-        <div className="space-y-4">
+        <div className="d-flex flex-column gap-3">
           {rentalData && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="row g-2">
               {[
                 { label: 'Rent Collected', value: formatCurrency(rentalData.summary.totalRent), color: 'text-blue-700' },
                 { label: 'Service Charges', value: formatCurrency(rentalData.summary.totalServiceCharge), color: 'text-violet-700' },
@@ -119,7 +118,7 @@ export default function ReportsPage() {
               ].map((s) => (
                 <Card key={s.label}>
                   <CardContent className="py-4">
-                    <p className="text-xs text-slate-400">{s.label}</p>
+                    <p className="text-muted small">{s.label}</p>
                     <p className={`text-xl font-bold mt-1 ${s.color}`}>{s.value}</p>
                   </CardContent>
                 </Card>
@@ -127,19 +126,19 @@ export default function ReportsPage() {
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="d-flex gap-2">
             <Button variant="outline" size="sm" onClick={() => reportsApi.exportReport({ format: 'pdf', type: 'rental', ...applied })}>
-              <FileText size={14} className="mr-1" /> Export PDF
+              <i className="fas fa-file-pdf me-1" /> Export PDF
             </Button>
             <Button variant="outline" size="sm" onClick={() => reportsApi.exportReport({ format: 'excel', type: 'rental', ...applied })}>
-              <FileSpreadsheet size={14} className="mr-1" /> Export Excel
+              <i className="fas fa-file-excel me-1" /> Export Excel
             </Button>
           </div>
 
           <Card>
             <CardHeader><CardTitle>Payment Details</CardTitle></CardHeader>
             <CardContent className="p-0">
-              {loadingRental ? <div className="p-8 text-center text-slate-400">Loading…</div> : (
+              {loadingRental ? <div className="p-4 text-center text-muted">Loading…</div> : (
                 <Table>
                   <TableHead>
                     <tr><Th>Date</Th><Th>Tenant</Th><Th>Unit</Th><Th>Property</Th><Th>Type</Th><Th>Period</Th><Th>Amount</Th></tr>
@@ -152,12 +151,12 @@ export default function ReportsPage() {
                         <Td>{p.unit?.unitNumber}</Td>
                         <Td>{p.unit?.property?.name}</Td>
                         <Td><Badge variant={p.paymentType === 'RENT' ? 'info' : 'warning'}>{p.paymentType}</Badge></Td>
-                        <Td className="text-xs text-slate-500">{formatDate(p.periodStart)} – {formatDate(p.periodEnd)}</Td>
-                        <Td className="font-semibold">{formatCurrency(p.amount)}</Td>
+                        <Td className="text-muted small">{formatDate(p.periodStart)} – {formatDate(p.periodEnd)}</Td>
+                        <Td className="fw-semibold">{formatCurrency(p.amount)}</Td>
                       </TableRow>
                     ))}
                     {(rentalData?.payments ?? []).length === 0 && (
-                      <TableRow><Td colSpan={7} className="text-center text-slate-400 py-8">No rental payments in this period</Td></TableRow>
+                      <TableRow><Td colSpan={7} className="text-center text-muted py-5">No rental payments in this period</Td></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -169,9 +168,9 @@ export default function ReportsPage() {
 
       {/* ── AirBnB Report ── */}
       {tab === 'airbnb' && (
-        <div className="space-y-4">
+        <div className="d-flex flex-column gap-3">
           {airbnbData && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="row g-2">
               {[
                 { label: 'Total Bookings', value: airbnbData.summary.bookingCount, isCurrency: false },
                 { label: 'Total Nights', value: airbnbData.summary.totalNights, isCurrency: false },
@@ -180,7 +179,7 @@ export default function ReportsPage() {
               ].map((s) => (
                 <Card key={s.label}>
                   <CardContent className="py-4">
-                    <p className="text-xs text-slate-400">{s.label}</p>
+                    <p className="text-muted small">{s.label}</p>
                     <p className="text-xl font-bold mt-1 text-slate-900">{s.value}</p>
                   </CardContent>
                 </Card>
@@ -188,19 +187,19 @@ export default function ReportsPage() {
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="d-flex gap-2">
             <Button variant="outline" size="sm" onClick={() => reportsApi.exportReport({ format: 'pdf', type: 'airbnb', ...applied })}>
-              <FileText size={14} className="mr-1" /> Export PDF
+              <i className="fas fa-file-pdf me-1" /> Export PDF
             </Button>
             <Button variant="outline" size="sm" onClick={() => reportsApi.exportReport({ format: 'excel', type: 'airbnb', ...applied })}>
-              <FileSpreadsheet size={14} className="mr-1" /> Export Excel
+              <i className="fas fa-file-excel me-1" /> Export Excel
             </Button>
           </div>
 
           <Card>
             <CardHeader><CardTitle>Booking Details</CardTitle></CardHeader>
             <CardContent className="p-0">
-              {loadingAirbnb ? <div className="p-8 text-center text-slate-400">Loading…</div> : (
+              {loadingAirbnb ? <div className="p-4 text-center text-muted">Loading…</div> : (
                 <Table>
                   <TableHead>
                     <tr><Th>Guest</Th><Th>Phone</Th><Th>Source</Th><Th>Unit</Th><Th>Property</Th><Th>Check-In</Th><Th>Check-Out</Th><Th>Nights</Th><Th>Daily Rate</Th><Th>Discount</Th><Th>Total</Th></tr>
@@ -208,8 +207,8 @@ export default function ReportsPage() {
                   <TableBody>
                     {(airbnbData?.bookings ?? []).map((b: any) => (
                       <TableRow key={b.id}>
-                        <Td className="font-medium">{b.guestName}</Td>
-                        <Td className="text-slate-500">{b.guestPhone ?? '—'}</Td>
+                        <Td className="fw-medium">{b.guestName}</Td>
+                        <Td className="text-muted">{b.guestPhone ?? '—'}</Td>
                         <Td className="text-xs">
                           {b.bookingSource === 'OTHER' && b.bookingSourceOther
                             ? b.bookingSourceOther
@@ -222,11 +221,11 @@ export default function ReportsPage() {
                         <Td>{b.days}</Td>
                         <Td>{formatCurrency(b.dailyRate)}</Td>
                         <Td>{formatCurrency(b.discount)}</Td>
-                        <Td className="font-semibold">{formatCurrency(b.totalAmount)}</Td>
+                        <Td className="fw-semibold">{formatCurrency(b.totalAmount)}</Td>
                       </TableRow>
                     ))}
                     {(airbnbData?.bookings ?? []).length === 0 && (
-                      <TableRow><Td colSpan={11} className="text-center text-slate-400 py-8">No AirBnB bookings in this period</Td></TableRow>
+                      <TableRow><Td colSpan={11} className="text-center text-muted py-5">No AirBnB bookings in this period</Td></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -238,14 +237,14 @@ export default function ReportsPage() {
 
       {/* ── Upcoming Collections ── */}
       {tab === 'upcoming' && (
-        <div className="space-y-4">
+        <div className="d-flex flex-column gap-3">
           {upcomingData && (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="row g-2">
               <Card>
                 <CardContent className="py-4 flex items-center gap-3">
-                  <AlertTriangle size={22} className="text-red-500 shrink-0" />
+                  <i className="fas fa-exclamation-triangle fa-lg flex-shrink-0 text-danger" />
                   <div>
-                    <p className="text-xs text-slate-400">Overdue</p>
+                    <p className="text-muted small">Overdue</p>
                     <p className="text-2xl font-bold text-red-600">{upcomingData.summary.overdue}</p>
                   </div>
                 </CardContent>
@@ -254,7 +253,7 @@ export default function ReportsPage() {
                 <CardContent className="py-4 flex items-center gap-3">
                   <Clock size={22} className="text-amber-500 shrink-0" />
                   <div>
-                    <p className="text-xs text-slate-400">Due within 7 days</p>
+                    <p className="text-muted small">Due within 7 days</p>
                     <p className="text-2xl font-bold text-amber-600">{upcomingData.summary.dueSoon}</p>
                   </div>
                 </CardContent>
@@ -263,7 +262,7 @@ export default function ReportsPage() {
                 <CardContent className="py-4 flex items-center gap-3">
                   <CheckCircle size={22} className="text-blue-500 shrink-0" />
                   <div>
-                    <p className="text-xs text-slate-400">Upcoming (8–45 days)</p>
+                    <p className="text-muted small">Upcoming (8–45 days)</p>
                     <p className="text-2xl font-bold text-blue-600">{upcomingData.summary.upcoming}</p>
                   </div>
                 </CardContent>
@@ -274,7 +273,7 @@ export default function ReportsPage() {
           <Card>
             <CardHeader><CardTitle>Tenants Due for Rent Collection (next 45 days)</CardTitle></CardHeader>
             <CardContent className="p-0">
-              {loadingUpcoming ? <div className="p-8 text-center text-slate-400">Loading…</div> : (
+              {loadingUpcoming ? <div className="p-4 text-center text-muted">Loading…</div> : (
                 <Table>
                   <TableHead>
                     <tr><Th>Status</Th><Th>Tenant</Th><Th>Phone</Th><Th>Unit</Th><Th>Property</Th><Th>Period Ends</Th><Th>Days Left</Th><Th>Expected Rent</Th><Th>Last Paid</Th></tr>
@@ -285,7 +284,7 @@ export default function ReportsPage() {
                         <Td>
                           <Badge variant={statusVariant[c.status] ?? 'default'}>{c.status.replace('_', ' ')}</Badge>
                         </Td>
-                        <Td className="font-medium">{c.tenant.firstName} {c.tenant.lastName}</Td>
+                        <Td className="fw-medium">{c.tenant.firstName} {c.tenant.lastName}</Td>
                         <Td>{c.tenant.phone}</Td>
                         <Td>{c.unit.unitNumber}</Td>
                         <Td>{c.unit.property.name}</Td>
@@ -293,14 +292,14 @@ export default function ReportsPage() {
                         <Td className={c.isOverdue ? 'text-red-600 font-bold' : c.daysRemaining <= 7 ? 'text-amber-600 font-semibold' : 'text-slate-700'}>
                           {c.isOverdue ? `${Math.abs(c.daysRemaining)}d overdue` : `${c.daysRemaining}d`}
                         </Td>
-                        <Td className="font-semibold">{formatCurrency(c.expectedRent)}</Td>
-                        <Td className="text-xs text-slate-500">
+                        <Td className="fw-semibold">{formatCurrency(c.expectedRent)}</Td>
+                        <Td className="text-muted small">
                           {c.lastPaymentDate ? formatDate(c.lastPaymentDate) : '—'}
                         </Td>
                       </TableRow>
                     ))}
                     {(upcomingData?.collections ?? []).length === 0 && (
-                      <TableRow><Td colSpan={9} className="text-center text-slate-400 py-8">No upcoming collections in the next 45 days</Td></TableRow>
+                      <TableRow><Td colSpan={9} className="text-center text-muted py-5">No upcoming collections in the next 45 days</Td></TableRow>
                     )}
                   </TableBody>
                 </Table>

@@ -1,6 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
 import { tenantsApi } from '@/api/tenants';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -22,11 +21,11 @@ export default function TenantDetailPage() {
   const totalPaid = (tenant.payments ?? []).reduce((s: number, p: any) => s + Number(p.amount), 0);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link to="/tenants" className="p-2 hover:bg-slate-100 rounded-lg text-slate-500"><ArrowLeft size={18} /></Link>
+    <div className="d-flex flex-column gap-4">
+      <div className="d-flex align-items-center gap-3">
+        <Link to="/tenants" className="p-2 hover:bg-slate-100 rounded-lg text-slate-500"><i className="fas fa-arrow-left" /></Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="fw-bold mb-1" style={{ fontSize: 22, color: '#333' }}>
             {tenant.firstName} {tenant.middleName ? `${tenant.middleName} ` : ''}{tenant.lastName}
           </h1>
           <p className="text-sm text-slate-500">{tenant.phone}</p>
@@ -35,10 +34,10 @@ export default function TenantDetailPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardContent className="py-4"><p className="text-xs text-slate-400">Current Unit</p><p className="font-semibold mt-1">{active ? `${active.unit.property.name} — ${active.unit.unitNumber}` : '—'}</p></CardContent></Card>
-        <Card><CardContent className="py-4"><p className="text-xs text-slate-400">Total Paid</p><p className="font-semibold mt-1">{formatCurrency(totalPaid)}</p></CardContent></Card>
-        <Card><CardContent className="py-4"><p className="text-xs text-slate-400">Payments Made</p><p className="font-semibold mt-1">{tenant.payments?.length ?? 0}</p></CardContent></Card>
+      <div className="row g-2">
+        <Card><CardContent className="py-4"><p className="text-muted small">Current Unit</p><p className="font-semibold mt-1">{active ? `${active.unit.property.name} — ${active.unit.unitNumber}` : '—'}</p></CardContent></Card>
+        <Card><CardContent className="py-4"><p className="text-muted small">Total Paid</p><p className="font-semibold mt-1">{formatCurrency(totalPaid)}</p></CardContent></Card>
+        <Card><CardContent className="py-4"><p className="text-muted small">Payments Made</p><p className="font-semibold mt-1">{tenant.payments?.length ?? 0}</p></CardContent></Card>
       </div>
 
       {/* Assignment History */}
@@ -57,7 +56,7 @@ export default function TenantDetailPage() {
                   <Td><Badge variant={a.isActive ? 'success' : 'default'}>{a.isActive ? 'Active' : 'Ended'}</Badge></Td>
                 </TableRow>
               ))}
-              {(tenant.assignments ?? []).length === 0 && <TableRow><Td colSpan={5} className="text-center text-slate-400 py-6">No assignments</Td></TableRow>}
+              {(tenant.assignments ?? []).length === 0 && <TableRow><Td colSpan={5} className="text-center text-muted py-4">No assignments</Td></TableRow>}
             </TableBody>
           </Table>
         </CardContent>
@@ -76,11 +75,11 @@ export default function TenantDetailPage() {
                   <Td>{p.unit?.unitNumber}</Td>
                   <Td><Badge variant="info">{p.paymentType}</Badge></Td>
                   <Td className="text-xs">{formatDate(p.periodStart)} – {formatDate(p.periodEnd)}</Td>
-                  <Td className="font-medium">{formatCurrency(p.amount)}</Td>
-                  <Td className="text-xs text-slate-400">{p.recordedBy?.firstName} {p.recordedBy?.lastName}</Td>
+                  <Td className="fw-medium">{formatCurrency(p.amount)}</Td>
+                  <Td className="text-muted small">{p.recordedBy?.firstName} {p.recordedBy?.lastName}</Td>
                 </TableRow>
               ))}
-              {(tenant.payments ?? []).length === 0 && <TableRow><Td colSpan={6} className="text-center text-slate-400 py-6">No payments recorded</Td></TableRow>}
+              {(tenant.payments ?? []).length === 0 && <TableRow><Td colSpan={6} className="text-center text-muted py-4">No payments recorded</Td></TableRow>}
             </TableBody>
           </Table>
         </CardContent>

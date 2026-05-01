@@ -1,108 +1,75 @@
 import { NavLink } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Building2,
-  DoorOpen,
-  Users,
-  CreditCard,
-  CalendarDays,
-  BarChart3,
-  UserCog,
-  ClipboardList,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
 
 interface SidebarProps {
   collapsed: boolean;
-  onToggle: () => void;
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
-  const { logout, isAdmin, isManagerOrAdmin, canViewFinancials, user } = useAuth();
+export function Sidebar({ collapsed }: SidebarProps) {
+  const { user, logout, isAdmin, isManagerOrAdmin, canViewFinancials } = useAuth();
 
   const navItems = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true },
-    { to: '/properties', label: 'Properties', icon: Building2, show: isManagerOrAdmin() },
-    { to: '/units', label: 'Units', icon: DoorOpen, show: isManagerOrAdmin() },
-    { to: '/tenants', label: 'Tenants', icon: Users, show: isManagerOrAdmin() },
-    { to: '/payments', label: 'Payments', icon: CreditCard, show: canViewFinancials() },
-    { to: '/bookings', label: 'AirBnB Bookings', icon: CalendarDays, show: isManagerOrAdmin() },
-    { to: '/reports', label: 'Reports', icon: BarChart3, show: canViewFinancials() },
-    { to: '/users', label: 'User Management', icon: UserCog, show: isAdmin() },
-    { to: '/audit-logs', label: 'Audit Logs', icon: ClipboardList, show: isAdmin() },
+    { to: '/dashboard',  label: 'Dashboard',       icon: 'fa-tachometer-alt', show: true },
+    { to: '/properties', label: 'Properties',       icon: 'fa-building',        show: isManagerOrAdmin() },
+    { to: '/units',      label: 'Units',            icon: 'fa-door-open',       show: isManagerOrAdmin() },
+    { to: '/tenants',    label: 'Tenants',          icon: 'fa-users',           show: isManagerOrAdmin() },
+    { to: '/payments',   label: 'Payments',         icon: 'fa-credit-card',     show: canViewFinancials() },
+    { to: '/bookings',   label: 'AirBnB Bookings',  icon: 'fa-calendar-days',   show: isManagerOrAdmin() },
+    { to: '/reports',    label: 'Reports',          icon: 'fa-chart-bar',       show: canViewFinancials() },
+    { to: '/users',      label: 'User Management',  icon: 'fa-user-cog',        show: isAdmin() },
+    { to: '/audit-logs', label: 'Audit Logs',       icon: 'fa-clipboard-list',  show: isAdmin() },
   ];
 
   return (
-    <aside
-      className={cn(
-        'flex flex-col bg-slate-900 text-white transition-all duration-300 h-screen sticky top-0',
-        collapsed ? 'w-16' : 'w-64'
-      )}
-    >
+    <aside className={`lbd-sidebar ${collapsed ? 'collapsed' : ''}`}>
       {/* Logo */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-slate-700">
+      <div className="lbd-sidebar-logo">
+        <i className="fas fa-building brand-icon" />
         {!collapsed && (
           <div>
-            <span className="font-bold text-lg text-blue-400">TMIS</span>
-            <p className="text-xs text-slate-400">Rental Management</p>
+            <div className="brand-name">TMIS</div>
+            <div className="brand-sub">Rental Management</div>
           </div>
         )}
-        <button
-          onClick={onToggle}
-          className="p-1.5 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors ml-auto"
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+      {/* Navigation */}
+      <nav className="lbd-sidebar-nav">
         {navItems
           .filter((item) => item.show)
           .map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                )
-              }
+              className={({ isActive }) => `lbd-nav-link ${isActive ? 'active' : ''}`}
               title={collapsed ? item.label : undefined}
             >
-              <item.icon size={18} className="shrink-0" />
+              <i className={`fas ${item.icon} lbd-nav-icon`} />
               {!collapsed && <span>{item.label}</span>}
             </NavLink>
           ))}
       </nav>
 
       {/* User + Logout */}
-      <div className="border-t border-slate-700 p-3">
-        {!collapsed && (
-          <div className="px-2 pb-2">
-            <p className="text-sm font-medium text-white truncate">
-              {user?.firstName} {user?.lastName}
+      <div className="lbd-sidebar-footer">
+        {!collapsed && user && (
+          <div className="mb-2 px-1">
+            <p className="mb-0 fw-medium" style={{ fontSize: 13, color: '#333' }}>
+              {user.firstName} {user.lastName}
             </p>
-            <p className="text-xs text-slate-400 truncate">{user?.role}</p>
+            <p className="mb-0 text-muted" style={{ fontSize: 11 }}>
+              {user.role}
+            </p>
           </div>
         )}
         <button
           onClick={logout}
-          className={cn(
-            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-red-600 hover:text-white transition-colors w-full',
-            collapsed && 'justify-center'
-          )}
+          className="lbd-nav-link text-danger"
+          style={{ width: '100%' }}
           title={collapsed ? 'Logout' : undefined}
         >
-          <LogOut size={18} />
-          {!collapsed && 'Logout'}
+          <i className="fas fa-sign-out-alt lbd-nav-icon" />
+          {!collapsed && <span>Logout</span>}
         </button>
       </div>
     </aside>

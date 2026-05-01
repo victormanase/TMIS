@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus } from 'lucide-react';
 import { paymentsApi, type Payment } from '@/api/payments';
 import { tenantsApi } from '@/api/tenants';
 import { unitsApi } from '@/api/units';
@@ -66,15 +65,15 @@ export default function PaymentsPage() {
   const units = unitsData?.data ?? [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="d-flex flex-column gap-4">
+      <div className="d-flex align-items-center justify-content-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Payments</h1>
-          <p className="text-sm text-slate-500 mt-1">Track rent and service charge collections</p>
+          <h1 className="fw-bold mb-1" style={{ fontSize: 22, color: '#333' }}>Payments</h1>
+          <p className="text-muted small mt-1">Track rent and service charge collections</p>
         </div>
         {isManagerOrAdmin() && (
           <Button onClick={() => { setFormError(''); reset(); setModalOpen(true); }}>
-            <Plus size={16} className="mr-1" /> Record Payment
+            <i className="fas fa-plus me-1" /> Record Payment
           </Button>
         )}
       </div>
@@ -82,19 +81,19 @@ export default function PaymentsPage() {
       {/* Filters */}
       <Card>
         <CardContent className="py-3">
-          <div className="flex flex-wrap gap-3 items-end">
+          <div className="d-flex flex-wrap gap-3 align-items-end">
             <div>
               <label className="text-xs text-slate-500 block mb-1">From</label>
-              <input type="date" className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <input type="date" className="form-select form-select-sm"
                 value={filters.dateFrom} onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })} />
             </div>
             <div>
               <label className="text-xs text-slate-500 block mb-1">To</label>
-              <input type="date" className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <input type="date" className="form-select form-select-sm"
                 value={filters.dateTo} onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })} />
             </div>
             <select
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-select form-select-sm"
               value={filters.paymentType}
               onChange={(e) => setFilters({ ...filters, paymentType: e.target.value })}
             >
@@ -108,7 +107,7 @@ export default function PaymentsPage() {
 
       {/* Table */}
       {isLoading ? (
-        <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-14 bg-slate-100 rounded-lg animate-pulse" />)}</div>
+        <div className="d-flex flex-column gap-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="rounded animate-pulse-lbd" style={{ height: 56, background: '#f0f0f0' }} />)}</div>
       ) : (
         <>
           <Table>
@@ -126,18 +125,18 @@ export default function PaymentsPage() {
             </TableHead>
             <TableBody>
               {payments.length === 0 ? (
-                <TableRow><Td colSpan={8} className="text-center text-slate-400 py-8">No payments found</Td></TableRow>
+                <TableRow><Td colSpan={8} className="text-center text-muted py-5">No payments found</Td></TableRow>
               ) : (
                 payments.map((p: Payment) => (
                   <TableRow key={p.id}>
                     <Td>{formatDate(p.paymentDate)}</Td>
-                    <Td className="font-medium">{p.tenant?.firstName} {p.tenant?.lastName}</Td>
+                    <Td className="fw-medium">{p.tenant?.firstName} {p.tenant?.lastName}</Td>
                     <Td>{p.unit?.unitNumber}</Td>
                     <Td>{p.unit?.property?.name}</Td>
                     <Td><Badge variant={paymentTypeVariant[p.paymentType] ?? 'default'}>{p.paymentType}</Badge></Td>
-                    <Td className="text-xs text-slate-500">{formatDate(p.periodStart)} – {formatDate(p.periodEnd)}</Td>
-                    <Td className="font-semibold">{formatCurrency(p.amount)}</Td>
-                    <Td className="text-xs text-slate-400">{p.recordedBy?.firstName} {p.recordedBy?.lastName}</Td>
+                    <Td className="text-muted small">{formatDate(p.periodStart)} – {formatDate(p.periodEnd)}</Td>
+                    <Td className="fw-semibold">{formatCurrency(p.amount)}</Td>
+                    <Td className="text-muted small">{p.recordedBy?.firstName} {p.recordedBy?.lastName}</Td>
                   </TableRow>
                 ))
               )}
@@ -152,8 +151,8 @@ export default function PaymentsPage() {
       {/* Record Payment Modal */}
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Record Payment" size="lg">
         {formError && <Alert variant="error" message={formError} className="mb-4" />}
-        <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="d-flex flex-column gap-3">
+          <div className="row g-2">
             <Select id="tenantId" label="Tenant *" error={errors.tenantId?.message}
               options={tenants.map((t: any) => ({ value: t.id, label: `${t.firstName} ${t.lastName}` }))}
               placeholder="Select tenant" {...register('tenantId')} />
@@ -167,12 +166,12 @@ export default function PaymentsPage() {
             <Input id="paymentDate" label="Payment Date *" type="date" error={errors.paymentDate?.message} {...register('paymentDate')} />
             <Input id="periodStart" label="Period Start *" type="date" error={errors.periodStart?.message} {...register('periodStart')} />
             <Input id="periodEnd" label="Period End *" type="date" error={errors.periodEnd?.message} {...register('periodEnd')} />
-            <div className="col-span-2">
+            <div className="col-12">
               <label className="text-sm font-medium text-slate-700 block mb-1">Notes</label>
-              <textarea rows={2} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" {...register('notes')} />
+              <textarea rows={2} className="form-control" {...register('notes')} />
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="d-flex justify-content-end gap-3 pt-2">
             <Button variant="outline" type="button" onClick={() => setModalOpen(false)}>Cancel</Button>
             <Button type="submit" loading={isSubmitting || createMutation.isPending}>Record Payment</Button>
           </div>

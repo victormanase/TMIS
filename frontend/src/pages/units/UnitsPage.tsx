@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Pencil, Trash2, Search, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { unitsApi, type Unit } from '@/api/units';
 import { propertiesApi } from '@/api/properties';
@@ -121,32 +120,32 @@ export default function UnitsPage() {
   const properties = propertiesData?.data ?? [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="d-flex flex-column gap-4">
+      <div className="d-flex align-items-center justify-content-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Rental Units</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage all rental units across properties</p>
+          <h1 className="fw-bold mb-1" style={{ fontSize: 22, color: '#333' }}>Rental Units</h1>
+          <p className="text-muted small mt-1">Manage all rental units across properties</p>
         </div>
         {isManagerOrAdmin() && (
-          <Button onClick={openCreate}><Plus size={16} className="mr-1" /> Add Unit</Button>
+          <Button onClick={openCreate}><i className="fas fa-plus me-1" /> Add Unit</Button>
         )}
       </div>
 
       {/* Filters */}
       <Card>
         <CardContent className="py-3">
-          <div className="flex flex-wrap gap-3">
-            <div className="relative flex-1 min-w-48">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="d-flex flex-wrap gap-3">
+            <div className="position-relative flex-grow-1">
+              <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: 13 }} />
               <input
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-control form-control-sm ps-5"
                 placeholder="Search unit number…"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               />
             </div>
             <select
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-select form-select-sm"
               value={filterProperty}
               onChange={(e) => { setFilterProperty(e.target.value); setPage(1); }}
             >
@@ -156,7 +155,7 @@ export default function UnitsPage() {
               ))}
             </select>
             <select
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="form-select form-select-sm"
               value={filterType}
               onChange={(e) => { setFilterType(e.target.value); setPage(1); }}
             >
@@ -169,8 +168,8 @@ export default function UnitsPage() {
 
       {/* Table */}
       {isLoading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-14 bg-slate-100 rounded-lg animate-pulse" />)}
+        <div className="d-flex flex-column gap-2">
+          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="rounded animate-pulse-lbd" style={{ height: 56, background: '#f0f0f0' }} />)}
         </div>
       ) : (
         <>
@@ -189,13 +188,13 @@ export default function UnitsPage() {
             </TableHead>
             <TableBody>
               {units.length === 0 ? (
-                <TableRow><Td colSpan={8} className="text-center text-slate-400 py-8">No units found</Td></TableRow>
+                <TableRow><Td colSpan={8} className="text-center text-muted py-5">No units found</Td></TableRow>
               ) : (
                 units.map((u: Unit) => {
                   const isOccupied = (u.assignments?.length ?? 0) > 0;
                   return (
                     <TableRow key={u.id}>
-                      <Td className="font-medium">{u.unitNumber}</Td>
+                      <Td className="fw-medium">{u.unitNumber}</Td>
                       <Td>{u.property?.name ?? '—'}</Td>
                       <Td><Badge variant="info">{u.unitType}</Badge></Td>
                       <Td>{u.bedrooms}</Td>
@@ -211,17 +210,17 @@ export default function UnitsPage() {
                         </Badge>
                       </Td>
                       <Td>
-                        <div className="flex gap-2">
-                          <Link to={`/units/${u.id}`} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors">
-                            <Eye size={14} />
+                        <div className="d-flex gap-2">
+                          <Link to={`/units/${u.id}`} className="btn btn-sm btn-outline-secondary border-0 px-2 py-1">
+                            <i className="fas fa-eye" />
                           </Link>
                           {isManagerOrAdmin() && (
                             <>
-                              <button onClick={() => openEdit(u)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors">
-                                <Pencil size={14} />
+                              <button onClick={() => openEdit(u)} className="btn btn-sm btn-outline-secondary border-0 px-2 py-1">
+                                <i className="fas fa-edit" />
                               </button>
-                              <button onClick={() => setDeleteId(u.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
-                                <Trash2 size={14} />
+                              <button onClick={() => setDeleteId(u.id)} className="btn btn-sm btn-outline-danger border-0 px-2 py-1">
+                                <i className="fas fa-trash-alt" />
                               </button>
                             </>
                           )}
@@ -242,8 +241,8 @@ export default function UnitsPage() {
       {/* Create/Edit Modal */}
       <Modal isOpen={modalOpen} onClose={closeModal} title={editing ? 'Edit Unit' : 'Add Unit'} size="lg">
         {formError && <Alert variant="error" message={formError} className="mb-4" />}
-        <form onSubmit={handleSubmit((d) => saveMutation.mutate(d))} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit((d) => saveMutation.mutate(d))} className="d-flex flex-column gap-3">
+          <div className="row g-2">
             <Select
               id="propertyId"
               label="Property *"
@@ -267,7 +266,7 @@ export default function UnitsPage() {
             )}
             <Input id="serviceCharge" label="Service Charge (TSh)" type="number" error={errors.serviceCharge?.message} {...register('serviceCharge')} />
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="d-flex justify-content-end gap-3 pt-2">
             <Button variant="outline" type="button" onClick={closeModal}>Cancel</Button>
             <Button type="submit" loading={isSubmitting || saveMutation.isPending}>
               {editing ? 'Save Changes' : 'Create Unit'}
@@ -279,7 +278,7 @@ export default function UnitsPage() {
       {/* Delete Confirm */}
       <Modal isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="Delete Unit" size="sm">
         <p className="text-slate-600 text-sm mb-4">Are you sure you want to delete this unit?</p>
-        <div className="flex justify-end gap-3">
+        <div className="d-flex justify-content-end gap-3">
           <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
           <Button variant="danger" loading={deleteMutation.isPending} onClick={() => deleteId && deleteMutation.mutate(deleteId)}>Delete</Button>
         </div>
