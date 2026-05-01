@@ -177,20 +177,34 @@ docker compose build --no-cache
 info "Starting all services..."
 docker compose up -d
 
-# Wait for backend health
-info "Waiting for backend to become healthy..."
-MAX_WAIT=90
+# Wait for the full stack (Nginx → backend) to become healthy.
+# The backend port 4000 is internal-only (expose, not ports), so we
+# check through Nginx on port 80 which proxies /api/* to the backend.
+info "Waiting for application to become healthy (up to 3 minutes)..."
+MAX_WAIT=180
 WAITED=0
-until curl -sf "http://localhost:4000/api/health" &>/dev/null; do
+until curl -sf "http://localhost/api/health" &>/dev/null; do
   if [ $WAITED -ge $MAX_WAIT ]; then
-    error "Backend did not start in ${MAX_WAIT}s. Run: docker compose logs backend"
+    echo ""
+    error "Application did not become healthy in ${MAX_WAIT}s.
+  Run these to diagnose:
+    docker compose logs db
+    docker compose logs backend
+    docker compose logs frontend
+    docker compose ps"
+  fi
+  if [ $((WAITED % 15)) -eq 0 ] && [ $WAITED -gt 0 ]; then
+    printf " (${WAITED}s) "
+    # Show backend status to help diagnose slow starts
+    BACKEND_STATUS=$(docker compose ps --format "{{.Status}}" backend 2>/dev/null || echo "unknown")
+    printf "[backend: ${BACKEND_STATUS}]"
   fi
   printf "."
   sleep 3
   WAITED=$((WAITED + 3))
 done
 echo ""
-success "Backend is healthy"
+success "Application is healthy"
 
 # ── Step 7: Seed database (first deploy only) ─────────────────────────────────
 step "7/8  Database seeding"
